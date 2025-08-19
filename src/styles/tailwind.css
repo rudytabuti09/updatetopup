@@ -1,0 +1,226 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Core Colors */
+    --color-background: #000000; /* black */
+    --color-foreground: #ffffff; /* white */
+    --color-border: #2d2d2d; /* gray-800 */
+    --color-input: #2d2d2d; /* gray-800 */
+    --color-ring: #00d4ff; /* cyan-400 */
+    
+    /* Card Colors */
+    --color-card: #1a1a1a; /* gray-900 */
+    --color-card-foreground: #ffffff; /* white */
+    --color-popover: #1a1a1a; /* gray-900 */
+    --color-popover-foreground: #ffffff; /* white */
+    
+    /* Muted Colors */
+    --color-muted: #2d2d2d; /* gray-800 */
+    --color-muted-foreground: #a3a3a3; /* gray-400 */
+    
+    /* Brand Colors */
+    --color-primary: #00d4ff; /* cyan-400 */
+    --color-primary-foreground: #000000; /* black */
+    --color-secondary: #8b5cf6; /* violet-500 */
+    --color-secondary-foreground: #ffffff; /* white */
+    
+    /* State Colors */
+    --color-destructive: #ef4444; /* red-500 */
+    --color-destructive-foreground: #ffffff; /* white */
+    --color-accent: #8b5cf6; /* violet-500 */
+    --color-accent-foreground: #ffffff; /* white */
+    --color-success: #10b981; /* emerald-500 */
+    --color-success-foreground: #ffffff; /* white */
+    --color-warning: #f59e0b; /* amber-500 */
+    --color-warning-foreground: #000000; /* black */
+    --color-error: #ef4444; /* red-500 */
+    --color-error-foreground: #ffffff; /* white */
+    
+    /* Gaming Specific Colors */
+    --color-neon-blue: #00d4ff; /* cyan-400 */
+    --color-neon-purple: #8b5cf6; /* violet-500 */
+    --color-gaming-gold: #ffd700; /* yellow-400 */
+    --color-surface: #2d2d2d; /* gray-800 */
+    --color-text-secondary: #9ca3af; /* gray-400 */
+  }
+
+  * {
+    @apply border-border;
+  }
+  
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
+  }
+  
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 700;
+  }
+  
+  .font-gaming {
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  .font-accent {
+    font-family: 'Manrope', sans-serif;
+  }
+}
+
+@layer components {
+  /* Gaming Neon Effects */
+  .neon-glow {
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.4), 0 0 40px rgba(0, 212, 255, 0.2);
+  }
+  
+  .neon-glow-purple {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.4), 0 0 40px rgba(139, 92, 246, 0.2);
+  }
+  
+  .gaming-card {
+    @apply bg-card border border-border rounded-lg backdrop-blur-sm;
+    background: rgba(26, 26, 26, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+  
+  .gaming-card:hover {
+    @apply transform scale-105 -translate-y-1;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 212, 255, 0.2);
+  }
+  
+  /* Premium Button Styles */
+  .btn-gaming-primary {
+    @apply bg-gradient-to-r from-primary to-secondary text-primary-foreground font-gaming font-semibold px-8 py-4 rounded-lg;
+    box-shadow: 0 4px 20px rgba(0, 212, 255, 0.3), 0 0 40px rgba(139, 92, 246, 0.2);
+    transition: all 0.2s ease-out;
+  }
+  
+  .btn-gaming-primary:hover {
+    @apply transform scale-105;
+    box-shadow: 0 6px 30px rgba(0, 212, 255, 0.4), 0 0 60px rgba(139, 92, 246, 0.3);
+  }
+  
+  .btn-gaming-secondary {
+    @apply border-2 border-primary text-primary font-gaming font-semibold px-8 py-4 rounded-lg bg-transparent;
+    transition: all 0.2s ease-out;
+  }
+  
+  .btn-gaming-secondary:hover {
+    @apply bg-primary text-primary-foreground transform scale-105;
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+  }
+  
+  /* Glassmorphism Effects */
+  .glass-card {
+    backdrop-filter: blur(20px);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Animation Classes */
+  .pulse-neon {
+    animation: pulse-neon 2s infinite;
+  }
+  
+  @keyframes pulse-neon {
+    0%, 100% {
+      box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+    }
+    50% {
+      box-shadow: 0 0 30px rgba(0, 212, 255, 0.6), 0 0 40px rgba(0, 212, 255, 0.3);
+    }
+  }
+  
+  .achievement-bounce {
+    animation: achievement-bounce 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  }
+  
+  @keyframes achievement-bounce {
+    0% {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    50% {
+      transform: scale(1.1);
+    }
+    100% {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+  
+  /* Text Gradients */
+  .text-gaming-gradient {
+    background: linear-gradient(135deg, #00d4ff, #8b5cf6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .text-gold-gradient {
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+}
+
+@layer utilities {
+  /* Custom Shadows */
+  .shadow-gaming {
+    box-shadow: 0 4px 20px rgba(0, 212, 255, 0.1);
+  }
+  
+  .shadow-gaming-lg {
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
+  }
+  
+  .shadow-neon-blue {
+    box-shadow: 0 0 20px rgba(0, 212, 255, 0.4);
+  }
+  
+  .shadow-neon-purple {
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+  }
+  
+  /* Border Utilities */
+  .border-neon {
+    border: 1px solid rgba(0, 212, 255, 0.3);
+  }
+  
+  .border-neon-active {
+    border: 2px solid #00d4ff;
+  }
+  
+  /* Background Utilities */
+  .bg-gaming-dark {
+    background: #1a1a1a;
+  }
+  
+  .bg-surface {
+    background: #2d2d2d;
+  }
+  
+  /* Smooth Transitions */
+  .transition-gaming {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .transition-fast {
+    transition: all 0.2s ease-out;
+  }
+  
+  .transition-slow {
+    transition: all 0.4s ease-out;
+  }
+}
