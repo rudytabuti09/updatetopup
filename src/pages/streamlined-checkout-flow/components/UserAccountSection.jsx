@@ -1,15 +1,27 @@
 import React, { useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
 import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
 
 const UserAccountSection = ({ userAccount, onAccountUpdate }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
     email: userAccount?.email || '',
     phone: userAccount?.phone || '',
     gameId: userAccount?.gameId || ''
   });
+
+  // Update formData when userAccount changes
+  React.useEffect(() => {
+    setFormData({
+      email: userAccount?.email || '',
+      phone: userAccount?.phone || '',
+      gameId: userAccount?.gameId || ''
+    });
+  }, [userAccount]);
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -21,6 +33,16 @@ const UserAccountSection = ({ userAccount, onAccountUpdate }) => {
   const handleSave = () => {
     onAccountUpdate(formData);
     setIsEditing(false);
+  };
+
+  const handleLogin = () => {
+    // Redirect to login with current page as return URL
+    navigate('/login', { state: { from: location } });
+  };
+
+  const handleSignup = () => {
+    // Redirect to signup with current page as return URL
+    navigate('/signup', { state: { from: location } });
   };
 
   const savedPaymentMethods = [
@@ -180,6 +202,7 @@ const UserAccountSection = ({ userAccount, onAccountUpdate }) => {
                 variant="default"
                 iconName="LogIn"
                 iconPosition="left"
+                onClick={handleLogin}
               >
                 Masuk
               </Button>
@@ -187,6 +210,7 @@ const UserAccountSection = ({ userAccount, onAccountUpdate }) => {
                 variant="outline"
                 iconName="UserPlus"
                 iconPosition="left"
+                onClick={handleSignup}
               >
                 Daftar Gratis
               </Button>

@@ -1,12 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 import Icon from '../AppIcon';
 import Button from './Button';
+import AuthButton from '../AuthButton';
 
 const Header = ({ className = '' }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,6 +45,20 @@ const Header = ({ className = '' }) => {
     return location?.pathname === path;
   };
 
+  const handleTopUpClick = () => {
+    if (isAuthenticated) {
+      navigate('/game-selection-hub');
+    } else {
+      navigate('/login', { state: { from: { pathname: '/game-selection-hub' } } });
+    }
+    closeMobileMenu();
+  };
+
+  const handleLoginClick = () => {
+    navigate('/login');
+    closeMobileMenu();
+  };
+
   return (
     <header 
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
@@ -64,10 +82,10 @@ const Header = ({ className = '' }) => {
               <div className="absolute -top-1 -right-1 w-3 h-3 bg-gaming-gold rounded-full animate-pulse"></div>
             </div>
             <div className="flex flex-col">
-              <span className="text-xl font-gaming font-bold text-gaming-gradient">
+              <span className="text-xl logo-text">
                 WMX TOPUP
               </span>
-              <span className="text-xs text-text-secondary font-accent">
+              <span className="text-xs text-text-secondary font-ui">
                 Gaming Commerce Hub
               </span>
             </div>
@@ -117,14 +135,41 @@ const Header = ({ className = '' }) => {
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center space-x-4">
-            <Button variant="outline" size="sm" className="border-primary/30 text-primary hover:bg-primary/10">
-              <Icon name="User" size={16} className="mr-2" />
-              Login
-            </Button>
-            <Button variant="default" size="sm" className="bg-gradient-to-r from-primary to-secondary hover:shadow-neon-glow">
-              <Icon name="CreditCard" size={16} className="mr-2" />
-              Top Up Now
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  className="bg-gradient-to-r from-primary to-secondary hover:shadow-neon-glow"
+                  onClick={handleTopUpClick}
+                >
+                  <Icon name="CreditCard" size={16} className="mr-2" />
+                  Top Up Now
+                </Button>
+                <AuthButton />
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="border-primary/30 text-primary hover:bg-primary/10"
+                  onClick={handleLoginClick}
+                >
+                  <Icon name="User" size={16} className="mr-2" />
+                  Login
+                </Button>
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  className="bg-gradient-to-r from-primary to-secondary hover:shadow-neon-glow"
+                  onClick={handleTopUpClick}
+                >
+                  <Icon name="CreditCard" size={16} className="mr-2" />
+                  Top Up Now
+                </Button>
+              </>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -165,24 +210,43 @@ const Header = ({ className = '' }) => {
             
             {/* Mobile CTA */}
             <div className="px-6 py-4 border-t border-border space-y-3">
-              <Button 
-                variant="outline" 
-                fullWidth 
-                className="border-primary/30 text-primary hover:bg-primary/10"
-                onClick={closeMobileMenu}
-              >
-                <Icon name="User" size={18} className="mr-2" />
-                Login to Account
-              </Button>
-              <Button 
-                variant="default" 
-                fullWidth 
-                className="bg-gradient-to-r from-primary to-secondary hover:shadow-neon-glow"
-                onClick={closeMobileMenu}
-              >
-                <Icon name="CreditCard" size={18} className="mr-2" />
-                Start Top Up
-              </Button>
+              {isAuthenticated ? (
+                <>
+                  <Button 
+                    variant="default" 
+                    fullWidth 
+                    className="bg-gradient-to-r from-primary to-secondary hover:shadow-neon-glow"
+                    onClick={handleTopUpClick}
+                  >
+                    <Icon name="CreditCard" size={18} className="mr-2" />
+                    Start Top Up
+                  </Button>
+                  <div className="pt-2">
+                    <AuthButton />
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Button 
+                    variant="outline" 
+                    fullWidth 
+                    className="border-primary/30 text-primary hover:bg-primary/10"
+                    onClick={handleLoginClick}
+                  >
+                    <Icon name="User" size={18} className="mr-2" />
+                    Login to Account
+                  </Button>
+                  <Button 
+                    variant="default" 
+                    fullWidth 
+                    className="bg-gradient-to-r from-primary to-secondary hover:shadow-neon-glow"
+                    onClick={handleTopUpClick}
+                  >
+                    <Icon name="CreditCard" size={18} className="mr-2" />
+                    Start Top Up
+                  </Button>
+                </>
+              )}
             </div>
           </div>
         </div>

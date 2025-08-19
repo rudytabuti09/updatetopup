@@ -398,7 +398,7 @@ const GameSelectionHub = () => {
                   <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-xl flex items-center justify-center">
                     <Icon name="Gamepad2" size={28} className="text-black" />
                   </div>
-                  <h1 className="text-4xl md:text-5xl font-gaming font-bold text-gaming-gradient">
+                  <h1 className="text-4xl md:text-5xl hero-title text-gaming-gradient">
                     Game Selection Hub
                   </h1>
                 </div>
@@ -554,7 +554,7 @@ const GameSelectionHub = () => {
                 <div className="w-10 h-10 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
                   <Icon name="Zap" size={20} className="text-black" />
                 </div>
-                <span className="text-xl font-gaming font-bold text-gaming-gradient">WMX TOPUP</span>
+                <span className="text-xl logo-text">WMX TOPUP</span>
               </div>
               <p className="text-text-secondary mb-6">
                 Platform top up gaming terpercaya dengan proses instan dan harga terbaik

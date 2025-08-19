@@ -60,9 +60,11 @@ export default {
         'text-secondary': 'var(--color-text-secondary)' // gray-400
       },
       fontFamily: {
-        'sans': ['Inter', 'system-ui', 'sans-serif'],
-        'gaming': ['Poppins', 'system-ui', 'sans-serif'],
-        'accent': ['Manrope', 'system-ui', 'sans-serif']
+        'sans': ['Manrope', 'Inter', 'system-ui', 'sans-serif'], // Default UI font
+        'gaming': ['Orbitron', 'system-ui', 'sans-serif'], // Logo & Hero sections
+        'accent': ['Inter', 'system-ui', 'sans-serif'], // Alternative UI font
+        'ui': ['Manrope', 'system-ui', 'sans-serif'], // Specific UI elements
+        'content': ['Inter', 'system-ui', 'sans-serif'] // Content/Dashboard
       },
       fontSize: {
         'hero': ['3.5rem', { lineHeight: '1.1', letterSpacing: '-0.02em' }],

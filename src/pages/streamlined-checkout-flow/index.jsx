@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
+import { useNotification } from '../../contexts/NotificationContext';
 import Header from '../../components/ui/Header';
 import Icon from '../../components/AppIcon';
 import OrderSummary from './components/OrderSummary';
@@ -12,6 +14,8 @@ import CheckoutActions from './components/CheckoutActions';
 
 const StreamlinedCheckoutFlow = () => {
   const navigate = useNavigate();
+  const { user, profile, isAuthenticated } = useAuth();
+  const { showSuccess, showError } = useNotification();
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [userAccount, setUserAccount] = useState(null);
@@ -50,17 +54,19 @@ const StreamlinedCheckoutFlow = () => {
   };
 
   useEffect(() => {
-    // Simulate checking user login status
-    const checkUserStatus = () => {
-      // For demo purposes, randomly show logged in or guest
-      const isLoggedIn = Math.random() > 0.5;
-      if (isLoggedIn) {
-        setUserAccount(mockUserAccount);
-      }
-    };
-
-    checkUserStatus();
-  }, []);
+    // Use real authentication data
+    if (isAuthenticated && user && profile) {
+      setUserAccount({
+        name: profile.full_name || profile.username || 'User',
+        email: user.email,
+        phone: profile.phone_number || '',
+        gameId: '', // User will need to fill this
+        avatar: profile.avatar_url
+      });
+    } else {
+      setUserAccount(null);
+    }
+  }, [isAuthenticated, user, profile]);
 
   const handlePaymentMethodSelect = (method) => {
     setSelectedPaymentMethod(method);
@@ -80,6 +86,12 @@ const StreamlinedCheckoutFlow = () => {
       // Simulate payment processing
       await new Promise(resolve => setTimeout(resolve, 3000));
       
+      // Show success notification
+      showSuccess(
+        'Pembayaran berhasil diproses! Diamond akan segera masuk ke akun game Anda dalam 1-5 menit.',
+        'Pembayaran Berhasil! 🎉'
+      );
+      
       // Show success modal
       setShowSuccessModal(true);
       
@@ -90,6 +102,10 @@ const StreamlinedCheckoutFlow = () => {
       
     } catch (error) {
       console.error('Payment failed:', error);
+      showError(
+        'Terjadi kesalahan saat memproses pembayaran. Silakan coba lagi atau hubungi customer service.',
+        'Pembayaran Gagal!'
+      );
     } finally {
       setIsProcessing(false);
     }
