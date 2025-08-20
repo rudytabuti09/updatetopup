@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useGame } from '../contexts/GameContext'
 import { useAuth } from '../contexts/AuthContext'
 import { supabaseHelpers } from '../utils/supabase'
@@ -24,6 +24,26 @@ export const useSupabaseData = () => {
   const [userPreferences, setUserPreferences] = useState(null)
   const [userFavorites, setUserFavorites] = useState([])
   const [userTransactions, setUserTransactions] = useState([])
+  const [userDataLoaded, setUserDataLoaded] = useState(false)
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false)
+
+  // Force initial load to complete after timeout to prevent infinite loading
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      console.log('useSupabaseData: Force initial load complete after timeout')
+      setInitialLoadComplete(true)
+    }, 3000) // 3 second timeout
+
+    return () => clearTimeout(timeout)
+  }, [])
+
+  // Mark initial load as complete when both contexts are ready
+  useEffect(() => {
+    if (!gameLoading && !authLoading && !initialLoadComplete) {
+      console.log('useSupabaseData: Initial load complete - contexts ready')
+      setInitialLoadComplete(true)
+    }
+  }, [gameLoading, authLoading, initialLoadComplete])
 
   // Load user-specific data when user is authenticated
   useEffect(() => {
@@ -38,6 +58,7 @@ export const useSupabaseData = () => {
 
   const loadUserData = async () => {
     try {
+      setUserDataLoaded(false)
       const [preferencesResult, favoritesResult, transactionsResult] = await Promise.all([
         supabaseHelpers.getUserPreferences(),
         supabaseHelpers.getUserFavorites(),
@@ -53,8 +74,11 @@ export const useSupabaseData = () => {
       if (transactionsResult.data) {
         setUserTransactions(transactionsResult.data)
       }
+      
+      setUserDataLoaded(true)
     } catch (error) {
       console.error('Error loading user data:', error)
+      setUserDataLoaded(true) // Mark as loaded even on error to prevent infinite loading
     }
   }
 
@@ -102,14 +126,6 @@ export const useSupabaseData = () => {
     }))
   }
 
-  // Get categories with proper structure
-  const categories = getCategories().map(cat => ({
-    id: cat.id,
-    name: cat.name,
-    icon: getCategoryIcon(cat.id),
-    count: cat.count
-  }))
-
   // Get category icon based on category type
   const getCategoryIcon = (categoryId) => {
     const iconMap = {
@@ -128,7 +144,7 @@ export const useSupabaseData = () => {
 
   // Transform data for components
   const trendingGames = transformGameData(getTrendingGames())
-  const recommendedGames = transformGameData(getRecommendedGames(userPreferences))
+  const recommendedGames = transformGameData(getRecommendedGames(userPreferences || {}))
   const allGames = transformGameData(filteredGames)
   const promoOffers = transformPromotionData(promotions)
 
@@ -243,6 +259,24 @@ export const useSupabaseData = () => {
     }
   }
 
+  // Get categories with proper structure (with null checks)
+  const categories = React.useMemo(() => {
+    try {
+      if (getCategories && typeof getCategories === 'function') {
+        return getCategories().map(cat => ({
+          id: cat.id,
+          name: cat.name,
+          icon: getCategoryIcon(cat.id),
+          count: cat.count
+        }))
+      }
+      return []
+    } catch (error) {
+      console.error('Error getting categories:', error)
+      return []
+    }
+  }, [getCategories])
+
   return {
     // Data for components (transformed to match existing structure)
     categories,
@@ -269,7 +303,7 @@ export const useSupabaseData = () => {
     searchTerm: filters.search,
     
     // Loading states
-    isLoading: gameLoading || authLoading,
+    isLoading: !initialLoadComplete && (gameLoading || authLoading),
     
     // Handlers (compatible with existing components)
     handleCategoryChange,

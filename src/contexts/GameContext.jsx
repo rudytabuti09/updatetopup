@@ -44,6 +44,16 @@ export const GameProvider = ({ children }) => {
       setLoading(true)
       setError(null)
 
+      // Set a timeout to prevent infinite loading
+      const timeoutId = setTimeout(() => {
+        console.log('GameContext: Loading timeout, using fallback data')
+        setGames([])
+        setPromotions([])
+        setPaymentMethods([])
+        setSystemSettings({})
+        setLoading(false)
+      }, 5000) // 5 second timeout
+
       // Load all initial data in parallel
       const [
         gamesResult,
@@ -57,27 +67,31 @@ export const GameProvider = ({ children }) => {
         supabaseHelpers.getPublicSettings()
       ])
 
-      if (gamesResult.error) {
-        throw gamesResult.error
-      }
-      if (promotionsResult.error) {
-        throw promotionsResult.error
-      }
-      if (paymentMethodsResult.error) {
-        throw paymentMethodsResult.error
-      }
-      if (settingsResult.error) {
-        throw settingsResult.error
-      }
+      clearTimeout(timeoutId)
 
+      // Use fallback data if there are errors
       setGames(gamesResult.data || [])
       setPromotions(promotionsResult.data || [])
       setPaymentMethods(paymentMethodsResult.data || [])
       setSystemSettings(settingsResult.data || {})
 
+      if (gamesResult.error || promotionsResult.error || paymentMethodsResult.error || settingsResult.error) {
+        console.warn('Some data failed to load, using available data:', {
+          gamesError: gamesResult.error,
+          promotionsError: promotionsResult.error,
+          paymentMethodsError: paymentMethodsResult.error,
+          settingsError: settingsResult.error
+        })
+      }
+
     } catch (err) {
       console.error('Error loading initial data:', err)
       setError(err.message)
+      // Set empty arrays as fallback
+      setGames([])
+      setPromotions([])
+      setPaymentMethods([])
+      setSystemSettings({})
     } finally {
       setLoading(false)
     }
@@ -269,12 +283,14 @@ export const GameProvider = ({ children }) => {
 
   // Get recommended games based on user preferences
   const getRecommendedGames = (userPreferences = {}) => {
+    // Ensure userPreferences is not null and has default structure
+    const safePreferences = userPreferences || {}
     let recommended = games.filter(game => !game.is_popular)
 
     // Filter by favorite genres if available
-    if (userPreferences.favorite_genres?.length > 0) {
+    if (safePreferences.favorite_genres?.length > 0) {
       recommended = recommended.filter(game => 
-        userPreferences.favorite_genres.includes(game.category)
+        safePreferences.favorite_genres.includes(game.category)
       )
     }
 

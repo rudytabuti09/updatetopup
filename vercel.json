@@ -1,0 +1,43 @@
+{
+  "version": 2,
+  "name": "wmx-topup",
+  "builds": [
+    {
+      "src": "package.json",
+      "use": "@vercel/static-build",
+      "config": {
+        "distDir": "dist"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/index.html"
+    }
+  ],
+  "functions": {
+    "api/vip-reseller-proxy.js": {
+      "maxDuration": 30
+    }
+  },
+  "env": {
+    "VITE_SUPABASE_URL": "@vite_supabase_url",
+    "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key",
+    "VITE_VIP_RESELLER_API_ID": "@vite_vip_reseller_api_id",
+    "VITE_VIP_RESELLER_API_KEY": "@vite_vip_reseller_api_key"
+  },
+  "build": {
+    "env": {
+      "VITE_SUPABASE_URL": "@vite_supabase_url",
+      "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key",
+      "VITE_VIP_RESELLER_API_ID": "@vite_vip_reseller_api_id",
+      "VITE_VIP_RESELLER_API_KEY": "@vite_vip_reseller_api_key",
+      "VITE_VIP_RESELLER_PROXY_URL": "/api/vip-reseller-proxy"
+    }
+  }
+}

@@ -1,11 +1,94 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import useSupabaseData from '../../../hooks/useSupabaseData';
 import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 
 const PaymentMethods = ({ selectedMethod, onMethodSelect }) => {
   const [expandedCategory, setExpandedCategory] = useState('ewallet');
+  const [paymentMethods, setPaymentMethods] = useState({});
+  const { paymentMethods: supabasePaymentMethods, isLoading } = useSupabaseData();
 
-  const paymentMethods = {
+  // Transform Supabase payment methods data
+  useEffect(() => {
+    if (supabasePaymentMethods && supabasePaymentMethods.length > 0) {
+      const groupedMethods = supabasePaymentMethods.reduce((acc, method) => {
+        const category = method.category || 'other';
+        
+        if (!acc[category]) {
+          acc[category] = {
+            title: getCategoryTitle(category),
+            icon: getCategoryIcon(category),
+            methods: []
+          };
+        }
+        
+        acc[category].methods.push({
+          id: method.id,
+          name: method.name,
+          logo: method.logo_url || getDefaultLogo(method.name),
+          processingTime: method.processing_time || 'Instan',
+          fee: method.fee || 0,
+          popular: method.is_popular || false,
+          description: method.description
+        });
+        
+        return acc;
+      }, {});
+
+      // Sort methods within each category by popularity and name
+      Object.keys(groupedMethods).forEach(category => {
+        groupedMethods[category].methods.sort((a, b) => {
+          if (a.popular && !b.popular) return -1;
+          if (!a.popular && b.popular) return 1;
+          return a.name.localeCompare(b.name);
+        });
+      });
+
+      setPaymentMethods(groupedMethods);
+    } else {
+      // Fallback to mock data if Supabase data is not available
+      setPaymentMethods(getFallbackPaymentMethods());
+    }
+  }, [supabasePaymentMethods]);
+
+  const getCategoryTitle = (category) => {
+    const titles = {
+      'ewallet': 'E-Wallet',
+      'bank': 'Transfer Bank',
+      'virtual': 'Virtual Account',
+      'retail': 'Retail Store',
+      'qris': 'QRIS',
+      'other': 'Lainnya'
+    };
+    return titles[category] || category;
+  };
+
+  const getCategoryIcon = (category) => {
+    const icons = {
+      'ewallet': 'Smartphone',
+      'bank': 'Building2',
+      'virtual': 'CreditCard',
+      'retail': 'Store',
+      'qris': 'QrCode',
+      'other': 'MoreHorizontal'
+    };
+    return icons[category] || 'CreditCard';
+  };
+
+  const getDefaultLogo = (methodName) => {
+    const logos = {
+      'DANA': 'https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=100&h=100&fit=crop',
+      'OVO': 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=100&h=100&fit=crop',
+      'GoPay': 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=100&h=100&fit=crop',
+      'ShopeePay': 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=100&h=100&fit=crop',
+      'BCA': 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=100&h=100&fit=crop',
+      'Mandiri': 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=100&h=100&fit=crop',
+      'BNI': 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=100&h=100&fit=crop'
+    };
+    return logos[methodName] || 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=100&h=100&fit=crop';
+  };
+
+  const getFallbackPaymentMethods = () => ({
     ewallet: {
       title: 'E-Wallet',
       icon: 'Smartphone',
@@ -33,13 +116,6 @@ const PaymentMethods = ({ selectedMethod, onMethodSelect }) => {
           processingTime: 'Instan',
           fee: 0,
           popular: true
-        },
-        {
-          id: 'shopeepay',
-          name: 'ShopeePay',
-          logo: 'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=100&h=100&fit=crop',
-          processingTime: 'Instan',
-          fee: 0
         }
       ]
     },
@@ -60,37 +136,10 @@ const PaymentMethods = ({ selectedMethod, onMethodSelect }) => {
           logo: 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=100&h=100&fit=crop',
           processingTime: '1-5 menit',
           fee: 2500
-        },
-        {
-          id: 'bni',
-          name: 'Bank BNI',
-          logo: 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=100&h=100&fit=crop',
-          processingTime: '1-5 menit',
-          fee: 2500
-        }
-      ]
-    },
-    virtual: {
-      title: 'Virtual Account',
-      icon: 'CreditCard',
-      methods: [
-        {
-          id: 'va_bca',
-          name: 'BCA Virtual Account',
-          logo: 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=100&h=100&fit=crop',
-          processingTime: '1-10 menit',
-          fee: 4000
-        },
-        {
-          id: 'va_mandiri',
-          name: 'Mandiri Virtual Account',
-          logo: 'https://images.unsplash.com/photo-1541354329998-f4d9a9f9297f?w=100&h=100&fit=crop',
-          processingTime: '1-10 menit',
-          fee: 4000
         }
       ]
     }
-  };
+  });
 
   const formatIDR = (amount) => {
     if (amount === 0) return 'Gratis';

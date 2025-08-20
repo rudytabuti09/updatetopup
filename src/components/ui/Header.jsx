@@ -4,6 +4,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import Icon from '../AppIcon';
 import Button from './Button';
 import AuthButton from '../AuthButton';
+import AdminAccess from '../AdminAccess';
 
 const Header = ({ className = '' }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -135,6 +136,7 @@ const Header = ({ className = '' }) => {
 
           {/* Desktop CTA */}
           <div className="hidden lg:flex items-center space-x-4">
+            <AdminAccess />
             {isAuthenticated ? (
               <>
                 <Button 

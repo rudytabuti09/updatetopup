@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Helmet } from 'react-helmet';
+import { useAuth } from '../../contexts/AuthContext';
+import useSupabaseData from '../../hooks/useSupabaseData';
 import Header from '../../components/ui/Header';
 import Icon from '../../components/AppIcon';
 import CategoryFilter from './components/CategoryFilter';
@@ -11,372 +13,35 @@ import PromoSection from './components/PromoSection';
 import GameCard from './components/GameCard';
 
 const GameSelectionHub = () => {
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState({
-    sortBy: 'popular',
-    priceRange: null,
-    processingSpeed: [],
-    hasPromo: false
-  });
-  const [filteredGames, setFilteredGames] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
+  const {
+    categories,
+    trendingGames,
+    recommendedGames,
+    allGames: filteredGames,
+    promoOffers,
+    searchSuggestions,
+    userPreferences,
+    isLoading,
+    filters,
+    selectedCategory,
+    searchTerm,
+    handleCategoryChange,
+    handleSearch,
+    handleFiltersChange,
+    handleClearFilters
+  } = useSupabaseData();
 
-  // Mock data for categories
-  const categories = [
-    { id: 'all', name: 'Semua Game', icon: 'Grid3X3', count: 150 },
-    { id: 'moba', name: 'MOBA', icon: 'Sword', count: 25 },
-    { id: 'battle-royale', name: 'Battle Royale', icon: 'Target', count: 18 },
-    { id: 'rpg', name: 'RPG', icon: 'Shield', count: 32 },
-    { id: 'strategy', name: 'Strategy', icon: 'Brain', count: 22 },
-    { id: 'racing', name: 'Racing', icon: 'Car', count: 15 },
-    { id: 'sports', name: 'Sports', icon: 'Trophy', count: 12 },
-    { id: 'casual', name: 'Casual', icon: 'Gamepad2', count: 26 }
-  ];
-
-  // Mock data for trending games
-  const trendingGames = [
-    {
-      id: 1,
-      name: "Mobile Legends: Bang Bang",
-      category: "MOBA",
-      image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=400&h=300&fit=crop",
-      rating: 4.8,
-      reviewCount: 125000,
-      isPopular: true,
-      hasPromo: true,
-      processingSpeed: 'instant',
-      packages: [
-        { amount: "86 Diamonds", price: 20000 },
-        { amount: "172 Diamonds", price: 40000 },
-        { amount: "257 Diamonds", price: 60000 },
-        { amount: "344 Diamonds", price: 80000 }
-      ],
-      topReview: {
-        username: "GamerPro123",
-        avatar: "https://randomuser.me/api/portraits/men/32.jpg",
-        rating: 5,
-        comment: "Top up cepat banget, langsung masuk ke akun. Recommended!"
-      }
-    },
-    {
-      id: 2,
-      name: "PUBG Mobile",
-      category: "Battle Royale",
-      image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=400&h=300&fit=crop",
-      rating: 4.7,
-      reviewCount: 98000,
-      isPopular: true,
-      hasPromo: false,
-      processingSpeed: 'fast',
-      packages: [
-        { amount: "60 UC", price: 15000 },
-        { amount: "325 UC", price: 75000 },
-        { amount: "660 UC", price: 150000 },
-        { amount: "1800 UC", price: 400000 }
-      ],
-      topReview: {
-        username: "BattleQueen",
-        avatar: "https://randomuser.me/api/portraits/women/44.jpg",
-        rating: 5,
-        comment: "Pelayanan bagus, harga kompetitif. Sudah langganan di sini."
-      }
-    },
-    {
-      id: 3,
-      name: "Free Fire",
-      category: "Battle Royale",
-      image: "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?w=400&h=300&fit=crop",
-      rating: 4.6,
-      reviewCount: 87000,
-      isPopular: true,
-      hasPromo: true,
-      processingSpeed: 'instant',
-      packages: [
-        { amount: "70 Diamonds", price: 10000 },
-        { amount: "140 Diamonds", price: 20000 },
-        { amount: "355 Diamonds", price: 50000 },
-        { amount: "720 Diamonds", price: 100000 }
-      ],
-      topReview: {
-        username: "FireMaster",
-        avatar: "https://randomuser.me/api/portraits/men/67.jpg",
-        rating: 4,
-        comment: "Proses cepat, customer service responsif. Mantap!"
-      }
-    },
-    {
-      id: 4,
-      name: "Genshin Impact",
-      category: "RPG",
-      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop",
-      rating: 4.9,
-      reviewCount: 156000,
-      isPopular: true,
-      hasPromo: false,
-      processingSpeed: 'fast',
-      packages: [
-        { amount: "60 Genesis Crystals", price: 16000 },
-        { amount: "300 Genesis Crystals", price: 79000 },
-        { amount: "980 Genesis Crystals", price: 249000 },
-        { amount: "1980 Genesis Crystals", price: 499000 }
-      ],
-      topReview: {
-        username: "TravelerMain",
-        avatar: "https://randomuser.me/api/portraits/women/23.jpg",
-        rating: 5,
-        comment: "Terpercaya banget! Udah top up berkali-kali, selalu aman."
-      }
-    }
-  ];
-
-  // Mock data for recommended games
-  const recommendedGames = [
-    {
-      id: 5,
-      name: "Arena of Valor",
-      category: "MOBA",
-      image: "https://images.unsplash.com/photo-1556438064-2d7646166914?w=400&h=300&fit=crop",
-      rating: 4.5,
-      reviewCount: 45000,
-      isPopular: false,
-      hasPromo: true,
-      processingSpeed: 'instant',
-      matchPercentage: 95,
-      recommendationReason: "Sesuai dengan preferensi MOBA kamu dan sedang ada promo menarik!",
-      packages: [
-        { amount: "90 Vouchers", price: 25000 },
-        { amount: "180 Vouchers", price: 50000 }
-      ],
-      topReview: {
-        username: "AOVPro",
-        avatar: "https://randomuser.me/api/portraits/men/15.jpg",
-        rating: 4,
-        comment: "Game seru, top up mudah dan cepat."
-      }
-    },
-    {
-      id: 6,
-      name: "Call of Duty Mobile",
-      category: "Battle Royale",
-      image: "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=400&h=300&fit=crop",
-      rating: 4.7,
-      reviewCount: 72000,
-      isPopular: false,
-      hasPromo: false,
-      processingSpeed: 'fast',
-      matchPercentage: 88,
-      recommendationReason: "Game FPS yang cocok dengan gaya bermain kompetitif kamu.",
-      packages: [
-        { amount: "80 CP", price: 15000 },
-        { amount: "400 CP", price: 75000 }
-      ],
-      topReview: {
-        username: "CODMaster",
-        avatar: "https://randomuser.me/api/portraits/men/28.jpg",
-        rating: 5,
-        comment: "Mantap, proses top up lancar jaya!"
-      }
-    }
-  ];
-
-  // Mock data for all games
-  const allGames = [
-    ...trendingGames,
-    ...recommendedGames,
-    {
-      id: 7,
-      name: "Clash of Clans",
-      category: "Strategy",
-      image: "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=400&h=300&fit=crop",
-      rating: 4.4,
-      reviewCount: 89000,
-      isPopular: false,
-      hasPromo: true,
-      processingSpeed: 'normal',
-      packages: [
-        { amount: "500 Gems", price: 75000 },
-        { amount: "1200 Gems", price: 150000 }
-      ],
-      topReview: {
-        username: "ClashKing",
-        avatar: "https://randomuser.me/api/portraits/men/41.jpg",
-        rating: 4,
-        comment: "Reliable service, harga oke."
-      }
-    },
-    {
-      id: 8,
-      name: "Honkai Impact 3rd",
-      category: "RPG",
-      image: "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=300&fit=crop",
-      rating: 4.6,
-      reviewCount: 34000,
-      isPopular: false,
-      hasPromo: false,
-      processingSpeed: 'fast',
-      packages: [
-        { amount: "60 Crystals", price: 16000 },
-        { amount: "330 Crystals", price: 79000 }
-      ],
-      topReview: {
-        username: "HonkaiPlayer",
-        avatar: "https://randomuser.me/api/portraits/women/19.jpg",
-        rating: 5,
-        comment: "Top up aman, customer service ramah."
-      }
-    }
-  ];
-
-  // Mock data for search suggestions
-  const searchSuggestions = allGames?.map(game => ({
-    name: game?.name,
-    category: game?.category,
-    icon: game?.image,
-    packageCount: game?.packages?.length
-  }));
-
-  // Mock data for user preferences
-  const userPreferences = {
-    favoriteGenres: ['MOBA', 'Battle Royale'],
-    averageSpending: 75000,
-    playTime: 'Malam (20:00-24:00)'
-  };
-
-  // Mock data for promo offers
-  const promoOffers = [
-    {
-      id: 1,
-      title: "Flash Sale 50% OFF",
-      description: "Dapatkan diskon hingga 50% untuk semua paket Mobile Legends!",
-      badge: "FLASH SALE",
-      discount: 50,
-      originalPrice: 100000,
-      discountedPrice: 50000,
-      gameName: "Mobile Legends",
-      gameImage: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=300&h=300&fit=crop",
-      gameIcon: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=50&h=50&fit=crop",
-      backgroundImage: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=800&h=400&fit=crop",
-      isLimited: true,
-      endTime: new Date(Date.now() + 24 * 60 * 60 * 1000)?.toISOString(),
-      shortDescription: "Diskon besar-besaran untuk diamonds!"
-    },
-    {
-      id: 2,
-      title: "Weekend Special",
-      description: "Bonus 25% diamonds untuk setiap pembelian PUBG Mobile di weekend!",
-      badge: "WEEKEND",
-      discount: 25,
-      originalPrice: 150000,
-      discountedPrice: 112500,
-      gameName: "PUBG Mobile",
-      gameImage: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=300&h=300&fit=crop",
-      gameIcon: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=50&h=50&fit=crop",
-      backgroundImage: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&h=400&fit=crop",
-      isLimited: false,
-      endTime: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)?.toISOString(),
-      shortDescription: "Bonus UC untuk weekend gaming!"
-    }
-  ];
-
-  // Filter and search logic
-  useEffect(() => {
-    setIsLoading(true);
-    
-    let filtered = [...allGames];
-
-    // Category filter
-    if (selectedCategory !== 'all') {
-      filtered = filtered?.filter(game => 
-        game?.category?.toLowerCase() === selectedCategory?.toLowerCase()
-      );
-    }
-
-    // Search filter
-    if (searchTerm) {
-      filtered = filtered?.filter(game =>
-        game?.name?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
-        game?.category?.toLowerCase()?.includes(searchTerm?.toLowerCase())
-      );
-    }
-
-    // Price range filter
-    if (filters?.priceRange) {
-      const priceRanges = {
-        'under-50k': { min: 0, max: 50000 },
-        '50k-100k': { min: 50000, max: 100000 },
-        '100k-250k': { min: 100000, max: 250000 },
-        '250k-500k': { min: 250000, max: 500000 },
-        'above-500k': { min: 500000, max: Infinity }
-      };
-      
-      const range = priceRanges?.[filters?.priceRange];
-      if (range) {
-        filtered = filtered?.filter(game => {
-          const minPrice = Math.min(...game?.packages?.map(pkg => pkg?.price));
-          return minPrice >= range?.min && minPrice <= range?.max;
-        });
-      }
-    }
-
-    // Processing speed filter
-    if (filters?.processingSpeed?.length > 0) {
-      filtered = filtered?.filter(game =>
-        filters?.processingSpeed?.includes(game?.processingSpeed)
-      );
-    }
-
-    // Promo filter
-    if (filters?.hasPromo) {
-      filtered = filtered?.filter(game => game?.hasPromo);
-    }
-
-    // Sort
-    switch (filters?.sortBy) {
-      case 'rating':
-        filtered?.sort((a, b) => b?.rating - a?.rating);
-        break;
-      case 'price-low':
-        filtered?.sort((a, b) => {
-          const minPriceA = Math.min(...a?.packages?.map(pkg => pkg?.price));
-          const minPriceB = Math.min(...b?.packages?.map(pkg => pkg?.price));
-          return minPriceA - minPriceB;
-        });
-        break;
-      case 'price-high':
-        filtered?.sort((a, b) => {
-          const maxPriceA = Math.max(...a?.packages?.map(pkg => pkg?.price));
-          const maxPriceB = Math.max(...b?.packages?.map(pkg => pkg?.price));
-          return maxPriceB - maxPriceA;
-        });
-        break;
-      case 'newest':
-        filtered?.sort((a, b) => b?.id - a?.id);
-        break;
-      default: // popular
-        filtered?.sort((a, b) => b?.reviewCount - a?.reviewCount);
-    }
-
-    setTimeout(() => {
-      setFilteredGames(filtered);
-      setIsLoading(false);
-    }, 300);
-  }, [selectedCategory, searchTerm, filters]);
+  // All data now comes from useSupabaseData hook - no more mock data!
 
   const handleQuickTopUp = (game) => {
     console.log('Quick top up for:', game?.name);
     // Navigate to checkout with pre-selected game
+    // You can add navigation logic here
   };
 
-  const handleClearFilters = () => {
-    setFilters({
-      sortBy: 'popular',
-      priceRange: null,
-      processingSpeed: [],
-      hasPromo: false
-    });
-    setSelectedCategory('all');
-    setSearchTerm('');
+  const handleLocalClearFilters = () => {
+    handleClearFilters();
   };
 
   return (
@@ -427,7 +92,7 @@ const GameSelectionHub = () => {
 
               {/* Search Bar */}
               <SearchBar 
-                onSearch={setSearchTerm}
+                onSearch={handleSearch}
                 suggestions={searchSuggestions}
               />
             </div>
@@ -454,13 +119,13 @@ const GameSelectionHub = () => {
             <CategoryFilter 
               categories={categories}
               selectedCategory={selectedCategory}
-              onCategoryChange={setSelectedCategory}
+              onCategoryChange={handleCategoryChange}
             />
 
             {/* Filter Panel */}
             <FilterPanel 
               filters={filters}
-              onFiltersChange={setFilters}
+              onFiltersChange={handleFiltersChange}
               onClearFilters={handleClearFilters}
             />
 
