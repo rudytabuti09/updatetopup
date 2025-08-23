@@ -17,12 +17,11 @@ export async function GET(request: NextRequest) {
     let order
     
     if (type === 'email') {
-      // Search by email in customerData
+      // Search by email in customerData - using string_contains for SQLite
       order = await prisma.order.findFirst({
         where: {
           customerData: {
-            path: ['email'],
-            equals: query
+            string_contains: `"email":"${query}"`
           }
         },
         include: {

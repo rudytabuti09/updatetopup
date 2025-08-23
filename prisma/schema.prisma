@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -89,14 +89,30 @@ model Product {
   category    String  // Game, Pulsa, E-Money, etc.
   isActive    Boolean @default(true)
   sortOrder   Int     @default(0)
+  
+  // Stock Management
+  stock       Int?     // Current stock (null = unlimited)
+  stockType   StockType @default(UNLIMITED)
+  minStock    Int?     // Minimum stock alert level
+  maxStock    Int?     // Maximum stock level
+  autoRestock Boolean  @default(false)
+  lastStockSync DateTime? // Last sync with VIP-Reseller
+  
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   // Relations
   service Service @relation(fields: [serviceId], references: [id])
   orders  OrderItem[]
+  stockHistory StockHistory[]
 
   @@map("products")
+}
+
+enum StockType {
+  LIMITED     // Has specific stock count
+  UNLIMITED   // No stock limit
+  OUT_OF_STOCK // Temporarily out of stock
 }
 
 // Orders and Transactions
@@ -253,6 +269,32 @@ enum WebhookType {
   PAYMENT_NOTIFICATION
   ORDER_STATUS_UPDATE
   BALANCE_UPDATE
+}
+
+// Stock History for tracking changes
+model StockHistory {
+  id        String @id @default(cuid())
+  productId String
+  type      StockHistoryType
+  quantity  Int      // Positive for addition, negative for reduction
+  oldStock  Int?
+  newStock  Int?
+  reason    String?  // Manual adjustment, sync, order, etc.
+  userId    String?  // Who made the change
+  createdAt DateTime @default(now())
+
+  // Relations
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("stock_history")
+}
+
+enum StockHistoryType {
+  MANUAL_ADJUSTMENT
+  ORDER_REDUCTION
+  SYNC_UPDATE
+  RESTOCK
+  CORRECTION
 }
 
 // System Configuration

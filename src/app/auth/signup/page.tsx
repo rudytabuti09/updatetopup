@@ -77,7 +77,7 @@ export default function SignUpPage() {
           
           {/* Logo */}
           <div className="text-center mb-8">
-            <Logo size="large" />
+            <Logo size="lg" />
             <h1 className="text-2xl font-heading font-bold text-white mt-4 mb-2">
               Buat Akun Baru
             </h1>

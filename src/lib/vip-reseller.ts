@@ -1,4 +1,5 @@
 import axios from 'axios'
+import CryptoJS from 'crypto-js'
 
 const VIP_API_URL = process.env.VIP_RESELLER_API_URL || 'https://vip-reseller.co.id/api'
 const VIP_API_KEY = process.env.VIP_RESELLER_API_KEY
@@ -26,6 +27,7 @@ interface VipService {
   type: string
   status: string
   note: string
+  stock?: boolean
 }
 
 interface VipProduct {
@@ -42,39 +44,76 @@ interface VipProduct {
   min: string
   max: string
   cut_off: string
+  stock?: number
 }
 
 interface VipOrderRequest {
+  type: 'order'
   service: string
-  data: string
+  data_no: string
+  data_zone?: string
   custom?: string
 }
 
 interface VipOrderResponse {
-  id: string
+  result: boolean
   data: {
     trxid: string
-    service: string
     data: string
+    zone?: string
+    service: string
     status: string
+    note?: string
     balance: number
-    message: string
+    price: number
     sn?: string
-    created_date: string
-    last_update: string
   }
+  message: string
 }
 
 interface VipStatusResponse {
+  result: boolean
   data: {
     trxid: string
     service: string
     data: string
+    zone?: string
     status: string
     sn?: string
+    note?: string
+    price: number
     created_date: string
     last_update: string
   }
+  message: string
+}
+
+interface VipStockResponse {
+  result: boolean
+  data: Array<{
+    service: string
+    name: string
+    stock: number
+    status: string
+  }>
+  message: string
+}
+
+interface VipNicknameRequest {
+  type: 'get-nickname'
+  service: string
+  data_no: string
+  data_zone?: string
+}
+
+interface VipNicknameResponse {
+  result: boolean
+  data: {
+    nickname: string
+    data: string
+    zone?: string
+  }
+  message: string
 }
 
 class VipResellerAPI {
@@ -88,74 +127,79 @@ class VipResellerAPI {
     this.baseURL = VIP_API_URL
   }
 
-  private async getSignature(data: Record<string, unknown> | VipOrderRequest): Promise<string> {
-    // Generate MD5 signature for VIP-Reseller API
-    const crypto = await import('crypto')
-    const string = JSON.stringify(data) + this.apiKey
-    return crypto.createHash('md5').update(string).digest('hex')
+  private getSignature(): string {
+    // Generate MD5 signature: md5(API_ID + API_KEY)
+    return CryptoJS.MD5(this.apiId + this.apiKey).toString()
   }
 
-  private async makeRequest<T = unknown>(endpoint: string, data: Record<string, unknown> | VipOrderRequest = {}): Promise<T> {
+  private async makeRequest<T = unknown>(data: Record<string, unknown> = {}): Promise<T> {
     try {
       const requestData = {
         key: this.apiKey,
-        sign: await this.getSignature(data),
+        sign: this.getSignature(),
         ...data
       }
 
-      const response = await axios.post(`${this.baseURL}/${endpoint}`, requestData, {
+      const response = await axios.post(`${this.baseURL}/game-feature`, requestData, {
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
         },
         timeout: 30000
       })
 
       return response.data
     } catch (error) {
-      console.error(`VIP-Reseller API Error (${endpoint}):`, error)
+      console.error(`VIP-Reseller API Error:`, error)
       throw new Error(`API request failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
-  // Get account profile and balance
-  async getProfile(): Promise<VipProfile> {
-    return this.makeRequest('profile')
-  }
-
   // Get available services/games
   async getServices(): Promise<VipService[]> {
-    const response = await this.makeRequest<{ data: VipService[] }>('services')
+    const response = await this.makeRequest<{ result: boolean, data: VipService[] }>({ type: 'services' })
     return response.data || []
   }
 
-  // Get price list for specific service
-  async getPriceList(serviceId?: string): Promise<VipProduct[]> {
-    const data = serviceId ? { filter_type: 'service', filter_value: serviceId } : {}
-    const response = await this.makeRequest<{ data: VipProduct[] }>('price-list', data)
+  // Get price list for all services
+  async getPriceList(): Promise<VipProduct[]> {
+    const response = await this.makeRequest<{ result: boolean, data: VipProduct[] }>({ type: 'price-list' })
     return response.data || []
+  }
+
+  // Get stock information
+  async getStock(): Promise<VipStockResponse> {
+    return this.makeRequest({ type: 'get-stock' })
   }
 
   // Create new order
   async createOrder(orderData: VipOrderRequest): Promise<VipOrderResponse> {
-    return this.makeRequest('order', orderData)
+    return this.makeRequest(orderData)
   }
 
   // Check order status
   async getOrderStatus(trxId: string): Promise<VipStatusResponse> {
-    return this.makeRequest('status', { trxid: trxId })
+    return this.makeRequest({ type: 'status', trxid: trxId })
   }
 
   // Get nickname for certain games (if supported)
-  async getNickname(service: string, userId: string): Promise<{ nickname?: string, error?: string }> {
-    try {
-      const response = await this.makeRequest<{ nickname?: string, error?: string }>('get-nickname', {
-        service: service,
-        data: userId
-      })
-      return response
-    } catch (error) {
-      return { error: 'Nickname service not available' }
+  async getNickname(service: string, dataNo: string, dataZone?: string): Promise<VipNicknameResponse> {
+    const requestData: VipNicknameRequest = {
+      type: 'get-nickname',
+      service: service,
+      data_no: dataNo
     }
+    
+    if (dataZone) {
+      requestData.data_zone = dataZone
+    }
+    
+    return this.makeRequest(requestData)
+  }
+
+  // Get account balance
+  async getBalance(): Promise<{ balance: number }> {
+    const response = await this.makeRequest<{ result: boolean, data: { balance: number } }>({ type: 'balance' })
+    return { balance: response.data?.balance || 0 }
   }
 }
 

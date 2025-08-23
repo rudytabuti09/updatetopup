@@ -154,6 +154,19 @@ export default function OrdersPage() {
     }).format(new Date(dateString))
   }
 
+  const convertOrderStatus = (status: string) => {
+    switch (status) {
+      case 'PENDING': return 'pending'
+      case 'WAITING_PAYMENT': return 'waiting'
+      case 'PROCESSING': return 'processing'
+      case 'SUCCESS': return 'success'
+      case 'FAILED': return 'failed'
+      case 'CANCELLED': return 'cancelled'
+      case 'REFUNDED': return 'cancelled'
+      default: return 'pending'
+    }
+  }
+
   if (loading) {
     return (
       <DashboardLayout>
@@ -260,7 +273,7 @@ export default function OrdersPage() {
                     <div>
                       <div className="flex items-center space-x-2 mb-1">
                         <h3 className="font-semibold text-white">{order.service} - {order.product}</h3>
-                        <StatusBadge status={order.status} />
+                        <StatusBadge status={convertOrderStatus(order.status)} />
                       </div>
                       
                       <div className="text-sm text-white/60 space-y-1">

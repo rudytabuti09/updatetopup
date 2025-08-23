@@ -181,6 +181,19 @@ export default function AdminDashboard() {
     }
   }
 
+  const convertOrderStatus = (status: string) => {
+    switch (status) {
+      case 'PENDING': return 'pending'
+      case 'WAITING_PAYMENT': return 'waiting'
+      case 'PROCESSING': return 'processing'
+      case 'SUCCESS': return 'success'
+      case 'FAILED': return 'failed'
+      case 'CANCELLED': return 'cancelled'
+      case 'REFUNDED': return 'cancelled'
+      default: return 'pending'
+    }
+  }
+
   if (loading) {
     return (
       <AdminLayout>
@@ -344,7 +357,7 @@ export default function AdminDashboard() {
                     <p className="text-xs text-white/60">{order.orderNumber}</p>
                     <p className="text-xs text-white/60">{order.user}</p>
                   </div>
-                  <StatusBadge status={order.status} />
+                  <StatusBadge status={convertOrderStatus(order.status)} />
                 </div>
                 
                 <div className="flex items-center justify-between text-sm">
