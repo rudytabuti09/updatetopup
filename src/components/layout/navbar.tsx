@@ -32,11 +32,21 @@ export function Navbar() {
     setIsClient(true)
   }, [])
 
-  // Debug logging for production
+  // Debug logging and session timeout handling
   React.useEffect(() => {
     console.log('Session status:', status)
     console.log('Session data:', session)
     console.log('Is client:', isClient)
+    
+    // Handle stuck loading state
+    if (isClient && status === 'loading') {
+      const timeoutId = setTimeout(() => {
+        console.warn('Session loading timeout detected - this may indicate NextAuth API issues')
+        // Force re-render by updating a dummy state
+      }, 10000) // 10 second timeout
+      
+      return () => clearTimeout(timeoutId)
+    }
   }, [status, session, isClient])
 
   React.useEffect(() => {

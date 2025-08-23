@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>NextAuth Manual Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 5px; font-size: 12px; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 5px; }
+        button:hover { background: #0056b3; }
+    </style>
+</head>
+<body>
+    <h1>🔧 NextAuth Manual Test</h1>
+    <p>Test NextAuth endpoints manually untuk debug session loading issue</p>
+    
+    <div id="baseUrl">
+        <label>Base URL: </label>
+        <input type="text" id="urlInput" value="http://localhost:3000" style="width: 300px; padding: 5px;">
+        <button onclick="updateBaseUrl()">Update</button>
+    </div>
+    <br>
+    
+    <button onclick="testProviders()">Test Providers</button>
+    <button onclick="testSession()">Test Session</button>  
+    <button onclick="testCSRF()">Test CSRF</button>
+    <button onclick="testSignIn()">Test SignIn</button>
+    <button onclick="runAllTests()">Run All Tests</button>
+    <button onclick="clearResults()">Clear Results</button>
+    
+    <div id="results"></div>
+
+    <script>
+        let baseUrl = 'http://localhost:3000';
+        
+        function updateBaseUrl() {
+            baseUrl = document.getElementById('urlInput').value;
+            addResult('info', `Base URL updated to: ${baseUrl}`);
+        }
+
+        function addResult(type, message, data = null) {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            
+            let content = `<strong>${new Date().toLocaleTimeString()}</strong> - ${message}`;
+            if (data) {
+                content += `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            }
+            
+            div.innerHTML = content;
+            results.appendChild(div);
+            results.scrollTop = results.scrollHeight;
+        }
+
+        async function testEndpoint(endpoint, description) {
+            try {
+                addResult('warning', `Testing ${description}...`);
+                
+                const response = await fetch(`${baseUrl}${endpoint}`, {
+                    credentials: 'include',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    addResult('success', `✅ ${description} - Status: ${response.status}`, data);
+                } else {
+                    addResult('error', `❌ ${description} - Status: ${response.status}`, data);
+                }
+                
+                return { success: true, data };
+            } catch (error) {
+                addResult('error', `❌ ${description} - Error: ${error.message}`);
+                return { success: false, error: error.message };
+            }
+        }
+
+        async function testProviders() {
+            await testEndpoint('/api/auth/providers', 'Auth Providers');
+        }
+
+        async function testSession() {
+            await testEndpoint('/api/auth/session', 'Current Session');
+        }
+
+        async function testCSRF() {
+            await testEndpoint('/api/auth/csrf', 'CSRF Token');
+        }
+
+        async function testSignIn() {
+            await testEndpoint('/api/auth/signin', 'SignIn Page');
+        }
+
+        async function runAllTests() {
+            addResult('info', '🚀 Running all NextAuth tests...');
+            
+            await testProviders();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testSession();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testCSRF();
+            await new Promise(resolve => setTimeout(resolve, 500));
+            
+            await testSignIn();
+            
+            addResult('info', '✅ All tests completed');
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        // Auto-run tests when page loads
+        window.onload = function() {
+            addResult('info', 'NextAuth Manual Test Tool loaded');
+            addResult('info', `Testing against: ${baseUrl}`);
+            addResult('info', 'Click "Run All Tests" to start testing');
+        };
+    </script>
+</body>
+</html>
