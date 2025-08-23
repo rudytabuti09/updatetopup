@@ -47,9 +47,11 @@ const toastStore = {
     toastStore.listeners.forEach(listener => listener())
   },
   
-  subscribe: (listener: () => void) => {
+  subscribe: (listener: () => void): (() => void) => {
     toastStore.listeners.add(listener)
-    return () => toastStore.listeners.delete(listener)
+    return () => {
+      toastStore.listeners.delete(listener)
+    }
   }
 }
 
@@ -57,7 +59,8 @@ export function useToast() {
   const [, forceUpdate] = React.useReducer(x => x + 1, 0)
   
   React.useEffect(() => {
-    return toastStore.subscribe(() => forceUpdate())
+    const unsubscribe = toastStore.subscribe(() => forceUpdate())
+    return unsubscribe
   }, [])
   
   return {

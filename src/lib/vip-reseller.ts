@@ -173,7 +173,7 @@ class VipResellerAPI {
 
   // Create new order
   async createOrder(orderData: VipOrderRequest): Promise<VipOrderResponse> {
-    return this.makeRequest(orderData)
+    return this.makeRequest(orderData as unknown as Record<string, unknown>)
   }
 
   // Check order status
@@ -193,7 +193,7 @@ class VipResellerAPI {
       requestData.data_zone = dataZone
     }
     
-    return this.makeRequest(requestData)
+    return this.makeRequest(requestData as unknown as Record<string, unknown>)
   }
 
   // Get account balance

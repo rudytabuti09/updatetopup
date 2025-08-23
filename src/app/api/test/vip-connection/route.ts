@@ -9,7 +9,7 @@ export async function GET() {
     const services = await vipResellerAPI.getServices()
     
     // Test additional endpoints
-    const tests = {
+    const tests: Record<string, unknown> = {
       services: services.length,
       connection: 'success',
       apiUrl: process.env.VIP_RESELLER_API_URL,
@@ -22,7 +22,8 @@ export async function GET() {
     try {
       const stockResponse = await vipResellerAPI.getStock()
       tests.stockEndpoint = stockResponse.result ? 'available' : 'limited'
-    } catch (stockError) {
+    } catch (error) {
+      console.error('Stock endpoint test error:', error)
       tests.stockEndpoint = 'not available'
     }
     

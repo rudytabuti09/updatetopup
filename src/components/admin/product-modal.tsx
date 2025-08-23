@@ -157,7 +157,7 @@ export function ProductModal({ product, categories, onClose, onSuccess }: Produc
       }
 
       // Prepare data for API
-      const apiData = {
+      const apiData: Record<string, unknown> = {
         ...formData,
         price: price,
         buyPrice: buyPrice,

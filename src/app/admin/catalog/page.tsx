@@ -80,7 +80,7 @@ export default function AdminCatalogPage() {
   
   const [products, setProducts] = useState<Product[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
-  const [lowStockProducts, setLowStockProducts] = useState<any[]>([])
+  const [lowStockProducts, setLowStockProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(true)
   const [syncing, setSyncing] = useState(false)

@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit
 
     // Build where clause
-    const where: any = {}
+    const where: Record<string, unknown> = {}
 
     if (search) {
       where.OR = [
@@ -280,7 +280,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Prepare update data
-    const dataToUpdate: any = {}
+    const dataToUpdate: Record<string, unknown> = {}
     
     if (updateData.name !== undefined) dataToUpdate.name = updateData.name.trim()
     if (updateData.description !== undefined) dataToUpdate.description = updateData.description?.trim()
@@ -303,8 +303,8 @@ export async function PUT(request: NextRequest) {
 
     // Calculate profit if price or buyPrice changed
     if (dataToUpdate.price !== undefined || dataToUpdate.buyPrice !== undefined) {
-      const newPrice = dataToUpdate.price ?? existingProduct.price
-      const newBuyPrice = dataToUpdate.buyPrice ?? existingProduct.buyPrice
+      const newPrice = (dataToUpdate.price as number) ?? existingProduct.price
+      const newBuyPrice = (dataToUpdate.buyPrice as number) ?? existingProduct.buyPrice
       dataToUpdate.profit = newPrice - newBuyPrice
     }
 

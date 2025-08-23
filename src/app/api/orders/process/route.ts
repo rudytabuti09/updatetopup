@@ -97,13 +97,13 @@ export async function POST(request: NextRequest) {
         }
 
         // Create order with VIP-Reseller
-        const customerData = order.customerData as any
+        const customerData = order.customerData as Record<string, unknown>
         
         const vipOrderData = {
           type: 'order' as const,
           service: product.sku, // VIP-Reseller product code
-          data_no: customerData.userId || customerData.gameId || customerData.phoneNumber,
-          data_zone: customerData.zone || customerData.serverId || undefined
+          data_no: String(customerData.userId || customerData.gameId || customerData.phoneNumber || ''),
+          data_zone: customerData.zone ? String(customerData.zone) : (customerData.serverId ? String(customerData.serverId) : undefined)
         }
 
         const vipResponse = await vipResellerAPI.createOrder(vipOrderData)
@@ -210,7 +210,7 @@ export async function GET(request: NextRequest) {
           })
 
           if (order) {
-            let newStatus = OrderStatus.PROCESSING
+            let newStatus: OrderStatus = OrderStatus.PROCESSING
             
             switch (statusResponse.data.status.toLowerCase()) {
               case 'success':

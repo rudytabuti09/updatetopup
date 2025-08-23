@@ -17,17 +17,17 @@ export async function POST(request: NextRequest) {
     // Get nickname from VIP-Reseller API
     const result = await vipResellerAPI.getNickname(service, userId)
     
-    if (result.nickname) {
+    if (result.result && result.data?.nickname) {
       return NextResponse.json({
         success: true,
-        nickname: result.nickname,
+        nickname: result.data.nickname,
         service,
         userId
       })
     } else {
       return NextResponse.json({
         success: false,
-        error: result.error || 'Nickname not found or service not supported',
+        error: result.message || 'Nickname not found or service not supported',
         service,
         userId
       }, { status: 404 })

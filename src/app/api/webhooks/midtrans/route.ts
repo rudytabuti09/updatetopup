@@ -60,8 +60,9 @@ export async function POST(request: NextRequest) {
 
         if (product) {
           const vipOrder = await vipResellerAPI.createOrder({
+            type: 'order',
             service: product.sku,
-            data: customerData.customerId,
+            data_no: customerData.customerId || '',
             custom: customerData.nickname
           })
 

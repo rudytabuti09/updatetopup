@@ -428,7 +428,16 @@ export class VipSyncService {
         }
       })
 
-      return products.filter(p => p.minStock && p.stock !== null && p.stock <= p.minStock)
+      return products.filter(p => 
+        p.minStock && 
+        p.stock !== null && 
+        p.stock <= p.minStock
+      ).map(p => ({
+        id: p.id,
+        name: p.name,
+        stock: p.stock || 0,
+        minStock: p.minStock || 0
+      }))
     } catch (error) {
       console.error('Get low stock products error:', error)
       return []
