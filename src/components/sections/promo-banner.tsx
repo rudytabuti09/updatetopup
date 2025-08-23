@@ -1,43 +1,56 @@
 'use client'
 
 import * as React from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, Zap, Sparkles, Trophy, Gift } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { GlassCard } from "@/components/ui/glass-card"
+import { GradientButton } from "@/components/ui/gradient-button"
 import { cn } from "@/lib/utils"
 
 const promoBanners = [
   {
     id: 1,
-    title: "DISKON 20% Mobile Legends",
-    subtitle: "Top up diamond ML dengan harga terbaik!",
+    title: "MEGA SALE ML",
+    subtitle: "Diamond 20% OFF - Limited Time!",
+    badge: "HOT DEAL",
+    icon: "💎",
     image: "/banners/ml-promo.jpg",
     link: "/catalog/mobile-legends",
-    gradient: "from-blue-600 to-purple-600"
+    gradient: "from-neon-magenta via-neon-purple to-neon-cyan",
+    accentColor: "neon-magenta"
   },
   {
     id: 2,
-    title: "FREE FIRE Bonus Event",
-    subtitle: "Dapatkan bonus diamond hingga 100%",
+    title: "FF SPECIAL EVENT",
+    subtitle: "Double Diamond Bonus Up to 100%",
+    badge: "EXCLUSIVE",
+    icon: "🔥",
     image: "/banners/ff-promo.jpg", 
     link: "/catalog/free-fire",
-    gradient: "from-orange-500 to-red-600"
+    gradient: "from-retro-orange via-retro-sunset to-neon-pink",
+    accentColor: "retro-orange"
   },
   {
     id: 3,
-    title: "GENSHIN Impact Promo",
-    subtitle: "Genesis Crystal murah meriah!",
+    title: "GENSHIN PRIMO",
+    subtitle: "Genesis Crystals Best Price!",
+    badge: "LIMITED",
+    icon: "⭐",
     image: "/banners/genshin-promo.jpg",
     link: "/catalog/genshin-impact", 
-    gradient: "from-purple-500 to-pink-600"
+    gradient: "from-neon-cyan via-neon-blue to-neon-purple",
+    accentColor: "neon-cyan"
   },
   {
     id: 4,
-    title: "Pulsa & Data Cashback",
-    subtitle: "Cashback hingga 50rb untuk pembelian perdana",
+    title: "PULSA CASHBACK",
+    subtitle: "Get 50K Cashback Today!",
+    badge: "NEW",
+    icon: "📱",
     image: "/banners/pulsa-promo.jpg",
     link: "/catalog?category=pulsa",
-    gradient: "from-green-500 to-teal-600"
+    gradient: "from-retro-gold via-retro-orange to-neon-pink",
+    accentColor: "retro-gold"
   }
 ]
 
@@ -65,13 +78,25 @@ export function PromoBanner() {
   }, [])
 
   return (
-    <section className="py-20">
-      <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">
-            <span className="gradient-text">Promo</span> Spesial
+    <section className="py-20 relative">
+      {/* Retro Grid Background */}
+      <div className="absolute inset-0 bg-grid-retro bg-[length:40px_40px] opacity-10" />
+      
+      <div className="container mx-auto px-4 relative z-10">
+        <div className="text-center mb-12 animate-slide-up">
+          {/* Retro Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-retro-gold/20 to-neon-magenta/20 border border-retro-gold/30 backdrop-blur-sm mb-6">
+            <Gift className="w-4 h-4 text-retro-gold" />
+            <span className="text-sm font-retro font-semibold text-retro-gold uppercase tracking-wider">
+              Special Offers
+            </span>
+          </div>
+          
+          <h2 className="text-4xl md:text-6xl font-heading font-black mb-4">
+            <span className="text-glow-magenta">PROMO</span>{" "}
+            <span className="text-retro-gold">SPESIAL</span>
           </h2>
-          <p className="text-white/70 max-w-2xl mx-auto">
+          <p className="text-wmx-gray-700 text-lg max-w-2xl mx-auto font-sans">
             Jangan lewatkan penawaran menarik dan diskon besar-besaran untuk produk favorit kamu
           </p>
         </div>
@@ -99,26 +124,57 @@ export function PromoBanner() {
 
                     <div className="relative z-10 container mx-auto px-8 flex items-center justify-between">
                       <div className="flex-1 max-w-lg">
-                        <h3 className="text-2xl md:text-4xl font-heading font-bold text-white mb-4">
+                        {/* Badge */}
+                        <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm border border-white/30 mb-4">
+                          <Sparkles className="w-4 h-4 text-white" />
+                          <span className="text-xs font-retro font-bold text-white uppercase tracking-wider">
+                            {banner.badge}
+                          </span>
+                        </div>
+                        
+                        <h3 className="text-3xl md:text-5xl font-heading font-black text-white mb-4 drop-shadow-2xl">
                           {banner.title}
                         </h3>
-                        <p className="text-white/90 text-lg mb-6">
+                        <p className="text-white/90 text-lg md:text-xl mb-8 font-sans">
                           {banner.subtitle}
                         </p>
-                        <Button 
-                          className="bg-white text-gray-900 hover:bg-white/90 font-semibold"
-                          size="lg"
+                        
+                        <GradientButton
+                          variant="secondary"
+                          size="xl"
+                          className="group shadow-2xl"
                         >
-                          Ambil Promo
-                        </Button>
+                          <Zap className="mr-2 h-5 w-5 group-hover:animate-pulse" />
+                          CLAIM NOW
+                        </GradientButton>
                       </div>
 
-                      {/* Placeholder for banner image */}
+                      {/* Retro-styled banner image */}
                       <div className="hidden md:block flex-shrink-0 ml-8">
-                        <div className="w-48 h-48 lg:w-64 lg:h-64 bg-white/10 rounded-2xl border border-white/20 flex items-center justify-center">
-                          <div className="text-white/50 text-center">
-                            <div className="text-4xl mb-2">🎮</div>
-                            <div className="text-sm">Banner Image</div>
+                        <div className="relative group">
+                          {/* Neon Glow Effect */}
+                          <div className={cn(
+                            "absolute inset-0 blur-3xl opacity-50 group-hover:opacity-70 transition-opacity",
+                            banner.accentColor === "neon-magenta" && "bg-neon-magenta",
+                            banner.accentColor === "neon-cyan" && "bg-neon-cyan",
+                            banner.accentColor === "retro-gold" && "bg-retro-gold",
+                            banner.accentColor === "retro-orange" && "bg-retro-orange"
+                          )} />
+                          
+                          <div className="relative w-48 h-48 lg:w-64 lg:h-64 bg-gradient-to-br from-white/20 to-white/5 backdrop-blur-sm rounded-3xl border-2 border-white/30 flex items-center justify-center overflow-hidden group-hover:scale-105 transition-transform">
+                            {/* Scan Line Effect */}
+                            <div className="absolute inset-0 pointer-events-none">
+                              <div className="absolute w-full h-px bg-gradient-to-r from-transparent via-white/50 to-transparent animate-scan-line" />
+                            </div>
+                            
+                            <div className="text-center z-10">
+                              <div className="text-7xl lg:text-8xl mb-4 animate-float">
+                                {banner.icon}
+                              </div>
+                              <div className="text-white font-retro font-bold text-sm uppercase tracking-wider">
+                                Limited Offer
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -128,36 +184,44 @@ export function PromoBanner() {
               ))}
             </div>
 
-            {/* Navigation Buttons */}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white hover:bg-white/10 z-20"
+            {/* Retro Navigation Buttons */}
+            <button
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-neon-magenta/20 hover:border-neon-magenta/50 hover:text-neon-magenta transition-all z-20 flex items-center justify-center group"
               onClick={prevSlide}
             >
-              <ChevronLeft className="h-6 w-6" />
-            </Button>
+              <ChevronLeft className="h-6 w-6 group-hover:scale-110 transition-transform" />
+            </button>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className="absolute right-4 top-1/2 transform -translate-y-1/2 text-white hover:bg-white/10 z-20"
+            <button
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white hover:bg-neon-cyan/20 hover:border-neon-cyan/50 hover:text-neon-cyan transition-all z-20 flex items-center justify-center group"
               onClick={nextSlide}
             >
-              <ChevronRight className="h-6 w-6" />
-            </Button>
+              <ChevronRight className="h-6 w-6 group-hover:scale-110 transition-transform" />
+            </button>
 
-            {/* Indicators */}
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex space-x-2 z-20">
+            {/* Retro Indicators */}
+            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex items-center gap-3 z-20">
               {promoBanners.map((_, index) => (
                 <button
                   key={index}
                   className={cn(
-                    "w-3 h-3 rounded-full transition-colors",
-                    index === currentIndex ? "bg-white" : "bg-white/50"
+                    "relative transition-all duration-300",
+                    index === currentIndex 
+                      ? "w-8 h-2" 
+                      : "w-2 h-2"
                   )}
                   onClick={() => setCurrentIndex(index)}
-                />
+                >
+                  <div className={cn(
+                    "absolute inset-0 rounded-full transition-all duration-300",
+                    index === currentIndex 
+                      ? "bg-gradient-to-r from-neon-magenta to-neon-cyan shadow-glow-magenta" 
+                      : "bg-white/50 hover:bg-white/70"
+                  )} />
+                  {index === currentIndex && (
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-neon-magenta to-neon-cyan animate-pulse" />
+                  )}
+                </button>
               ))}
             </div>
           </GlassCard>

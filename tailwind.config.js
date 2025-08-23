@@ -131,6 +131,10 @@ module.exports = {
           "0%, 100%": { transform: "translateY(0px)" },
           "50%": { transform: "translateY(-10px)" },
         },
+        "grid-scroll": {
+          "0%": { backgroundPosition: "0 0" },
+          "100%": { backgroundPosition: "50px 50px" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -141,6 +145,7 @@ module.exports = {
         "float": "float 3s ease-in-out infinite",
         "neon-pulse": "neon-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "scan-line": "scan-line 8s linear infinite",
+        "grid-scroll": "grid-scroll 10s linear infinite",
       },
       backgroundImage: {
         "gradient-neon": "linear-gradient(135deg, #FF00FF, #00FFFF)",

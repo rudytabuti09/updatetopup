@@ -321,6 +321,31 @@
     animation: spin 1s linear infinite;
   }
   
+  /* Arcade Grid Floor Effect */
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+  
+  .retro-grid {
+    background-image: 
+      linear-gradient(to right, #FF00FF33 1px, transparent 1px),
+      linear-gradient(to bottom, #00FFFF33 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+  
+  /* Neon Drop Shadows */
+  .drop-shadow-glow-magenta {
+    filter: drop-shadow(0 0 10px rgba(255, 0, 255, 0.8));
+  }
+  
+  .drop-shadow-glow-cyan {
+    filter: drop-shadow(0 0 10px rgba(0, 255, 255, 0.8));
+  }
+  
+  .drop-shadow-glow-gold {
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+  }
+  
   @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
