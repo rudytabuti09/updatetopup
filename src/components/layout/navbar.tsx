@@ -25,6 +25,19 @@ export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
   const [isScrolled, setIsScrolled] = React.useState(false)
   const [showUserMenu, setShowUserMenu] = React.useState(false)
+  const [isClient, setIsClient] = React.useState(false)
+
+  // Fix hydration mismatch
+  React.useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  // Debug logging for production
+  React.useEffect(() => {
+    console.log('Session status:', status)
+    console.log('Session data:', session)
+    console.log('Is client:', isClient)
+  }, [status, session, isClient])
 
   React.useEffect(() => {
     const handleScroll = () => {
@@ -106,7 +119,9 @@ export function Navbar() {
               />
             </div>
             
-            {status === 'loading' ? (
+            {!isClient ? (
+              <div className="w-16 h-8 bg-white/10 rounded animate-pulse" />
+            ) : status === 'loading' ? (
               <div className="w-16 h-8 bg-white/10 rounded animate-pulse" />
             ) : session?.user ? (
               <div className="relative user-menu-container">
@@ -252,7 +267,7 @@ export function Navbar() {
                       Keluar
                     </Button>
                   </div>
-                ) : (
+                ) : isClient && (
                   <GradientButton 
                     variant="primary" 
                     size="sm" 

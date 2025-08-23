@@ -325,3 +325,29 @@ model Banner {
 
   @@map("banners")
 }
+
+// Promo Codes and Discounts
+model Promo {
+  id          String    @id @default(cuid())
+  code        String    @unique
+  name        String
+  description String?
+  type        PromoType
+  value       Float     // Percentage (0-100) or fixed amount
+  minAmount   Float?    // Minimum order amount
+  maxDiscount Float?    // Maximum discount for percentage type
+  usageLimit  Int?      // Maximum number of uses
+  usedCount   Int       @default(0)
+  validFrom   DateTime
+  validTo     DateTime
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("promos")
+}
+
+enum PromoType {
+  PERCENTAGE
+  FIXED
+}
