@@ -4,7 +4,7 @@ import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { UserRole } from '@prisma/client'
 
-// GET - Fetch categories with their services
+// GET - Fetch services with statistics
 export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -24,19 +24,34 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const includeServices = searchParams.get('includeServices') === 'true'
+    const includeProducts = searchParams.get('includeProducts') === 'true'
+    const categoryId = searchParams.get('categoryId')
 
-    const categories = await prisma.category.findMany({
+    const whereClause: Record<string, unknown> = {}
+    if (categoryId && categoryId !== 'all') {
+      whereClause.categoryId = categoryId
+    }
+
+    const services = await prisma.service.findMany({
+      where: whereClause,
       include: {
-        ...(includeServices && {
-          services: {
+        category: {
+          select: {
+            id: true,
+            name: true,
+            slug: true
+          }
+        },
+        ...(includeProducts && {
+          products: {
             where: { isActive: true },
-            orderBy: { name: 'asc' }
+            orderBy: { sortOrder: 'asc' }
           }
         }),
         _count: {
           select: {
-            services: { where: { isActive: true } }
+            products: true,
+            orders: true
           }
         }
       },
@@ -45,10 +60,13 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: categories
+      data: {
+        services,
+        count: services.length
+      }
     })
   } catch (error) {
-    console.error('Categories fetch error:', error)
+    console.error('Services fetch error:', error)
     return NextResponse.json(
       { 
         success: false, 
@@ -60,7 +78,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST - Create new category
+// POST - Create new service
 export async function POST(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
@@ -80,11 +98,30 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, description, icon, sortOrder = 0 } = body
+    const { 
+      categoryId, 
+      name, 
+      description, 
+      logo, 
+      provider,
+      sortOrder = 0 
+    } = body
 
-    if (!name) {
+    if (!categoryId || !name || !provider) {
       return NextResponse.json(
-        { success: false, message: 'Name is required' },
+        { success: false, message: 'Category ID, name, and provider are required' },
+        { status: 400 }
+      )
+    }
+
+    // Check if category exists
+    const categoryExists = await prisma.category.findUnique({
+      where: { id: categoryId }
+    })
+
+    if (!categoryExists) {
+      return NextResponse.json(
+        { success: false, message: 'Category not found' },
         { status: 400 }
       )
     }
@@ -96,11 +133,11 @@ export async function POST(request: NextRequest) {
       .replace(/-+/g, '-')
       .trim()
 
-    // Check if name or slug already exists
-    const existing = await prisma.category.findFirst({
+    // Check if provider already exists
+    const existing = await prisma.service.findFirst({
       where: {
         OR: [
-          { name: name.trim() },
+          { provider },
           { slug }
         ]
       }
@@ -108,29 +145,38 @@ export async function POST(request: NextRequest) {
 
     if (existing) {
       return NextResponse.json(
-        { success: false, message: 'Category name or slug already exists' },
+        { success: false, message: 'Service with this provider or slug already exists' },
         { status: 400 }
       )
     }
 
-    const category = await prisma.category.create({
+    const service = await prisma.service.create({
       data: {
+        categoryId,
         name: name.trim(),
         slug,
         description: description?.trim(),
-        icon,
+        logo,
+        provider,
         sortOrder: parseInt(sortOrder),
         isActive: true
+      },
+      include: {
+        category: {
+          select: {
+            name: true
+          }
+        }
       }
     })
 
     return NextResponse.json({
       success: true,
-      message: 'Category created successfully',
-      data: category
+      message: 'Service created successfully',
+      data: service
     })
   } catch (error) {
-    console.error('Category creation error:', error)
+    console.error('Service creation error:', error)
     return NextResponse.json(
       { 
         success: false, 

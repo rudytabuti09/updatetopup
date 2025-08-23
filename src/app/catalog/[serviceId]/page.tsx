@@ -15,48 +15,34 @@ interface Product {
   id: string
   name: string
   price: number
-  originalPrice?: number
+  buyPrice: number
+  profit: number
+  sku: string
+  category: string
+  isActive: boolean
+  sortOrder: number
   description?: string
-  isPopular: boolean
+  isPopular?: boolean
   discount?: number
+  originalPrice?: number
 }
 
 interface Service {
   id: string
   name: string
-  description: string
-  category: string
-  image: string
-  gradient: string
+  description?: string
+  logo?: string
   provider: string
-  inputType: 'user_id' | 'phone' | 'email'
-  inputLabel: string
-  inputPlaceholder: string
-  nicknameSupported: boolean
+  category: {
+    name: string
+    slug: string
+  }
   products: Product[]
-}
-
-// Mock service data (replace with API call)
-const mockService: Service = {
-  id: "mobile-legends",
-  name: "Mobile Legends",
-  description: "Top up diamond Mobile Legends dengan proses tercepat dan harga termurah",
-  category: "Game",
-  image: "🏆",
-  gradient: "from-blue-600 to-purple-600",
-  provider: "ML",
-  inputType: "user_id",
-  inputLabel: "User ID",
-  inputPlaceholder: "Masukkan User ID + Zone ID (contoh: 123456789 (1234))",
-  nicknameSupported: true,
-  products: [
-    { id: "ml-86", name: "86 Diamond", price: 15000, originalPrice: 18000, discount: 17, isPopular: true, description: "Paket hemat untuk pemula" },
-    { id: "ml-172", name: "172 Diamond", price: 28000, originalPrice: 32000, discount: 13, isPopular: true, description: "Paket terpopuler" },
-    { id: "ml-257", name: "257 Diamond", price: 42000, isPopular: false, description: "Paket value yang menguntungkan" },
-    { id: "ml-344", name: "344 Diamond", price: 55000, originalPrice: 60000, discount: 8, isPopular: false },
-    { id: "ml-429", name: "429 Diamond", price: 68000, isPopular: false },
-    { id: "ml-514", name: "514 Diamond", price: 82000, originalPrice: 87000, discount: 6, isPopular: false },
-  ]
+  gradient?: string
+  image?: string
+  inputLabel?: string
+  inputPlaceholder?: string
+  nicknameSupported?: boolean
 }
 
 export default function ServiceDetailPage() {
@@ -65,28 +51,87 @@ export default function ServiceDetailPage() {
   const searchParams = useSearchParams()
   const serviceId = params.serviceId as string
   
-  const [service] = React.useState<Service>(mockService) // Replace with API call
+  const [service, setService] = React.useState<Service | null>(null)
+  const [loading, setLoading] = React.useState(true)
+  const [error, setError] = React.useState<string | null>(null)
   const [customerId, setCustomerId] = React.useState('')
   const [nickname, setNickname] = React.useState('')
   const [email, setEmail] = React.useState('')
   const [phone, setPhone] = React.useState('')
   const [selectedProductId, setSelectedProductId] = React.useState(searchParams.get('product') || '')
-  const [loading, setLoading] = React.useState(false)
+  const [creating, setCreating] = React.useState(false)
   const [nicknameLoading, setNicknameLoading] = React.useState(false)
   const [errors, setErrors] = React.useState<Record<string, string>>({})
 
-  const selectedProduct = service.products.find(p => p.id === selectedProductId)
-
-  // Auto-fetch nickname when customerId changes
+  // Load service data on mount
   React.useEffect(() => {
-    if (customerId && service.nicknameSupported) {
+    loadServiceData()
+  }, [serviceId])
+
+  const loadServiceData = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch(`/api/services?cached=true`)
+      const result = await response.json()
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to load service data')
+      }
+
+      // Find service by ID or name slug
+      const foundService = result.data.find((s: Service) => 
+        s.id === serviceId || 
+        s.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === serviceId
+      )
+
+      if (!foundService) {
+        setError('Service not found')
+        return
+      }
+
+      setService(foundService)
+      
+      // Auto-select first active product
+      const firstProduct = foundService.products.find((p: Product) => p.isActive)
+      if (firstProduct && !selectedProductId) {
+        setSelectedProductId(firstProduct.id)
+      }
+
+    } catch (err) {
+      console.error('Error loading service:', err)
+      setError(err instanceof Error ? err.message : 'Failed to load service')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const selectedProduct = service?.products.find(p => p.id === selectedProductId)
+
+  // Auto-fetch nickname when customerId changes (for supported games)
+  React.useEffect(() => {
+    if (customerId && service && service.category.name === 'Game') {
       const timer = setTimeout(async () => {
         setNicknameLoading(true)
         try {
-          // Mock API call - replace with real nickname fetching
-          await new Promise(resolve => setTimeout(resolve, 1000))
-          setNickname(`Player${Math.floor(Math.random() * 10000)}`) // Mock nickname
+          const response = await fetch('/api/services/nickname', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              service: service.provider,
+              userId: customerId
+            })
+          })
+          
+          const result = await response.json()
+          if (result.success && result.nickname) {
+            setNickname(result.nickname)
+            setErrors(prev => ({ ...prev, customerId: '' }))
+          } else {
+            setNickname('')
+            // Don't show error for nickname lookup failures
+          }
         } catch (error) {
+          console.error('Nickname lookup failed:', error)
           setNickname('')
         } finally {
           setNicknameLoading(false)
@@ -94,14 +139,16 @@ export default function ServiceDetailPage() {
       }, 500)
 
       return () => clearTimeout(timer)
+    } else {
+      setNickname('')
     }
-  }, [customerId, service.nicknameSupported])
+  }, [customerId, service])
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
     if (!customerId) {
-      newErrors.customerId = `${service.inputLabel} wajib diisi`
+      newErrors.customerId = 'User ID / Nomor wajib diisi'
     }
 
     if (!email) {
@@ -125,7 +172,7 @@ export default function ServiceDetailPage() {
   }
 
   const handleOrder = async () => {
-    if (!validateForm()) return
+    if (!validateForm() || !service) return
 
     setLoading(true)
     try {
@@ -158,6 +205,35 @@ export default function ServiceDetailPage() {
     }
   }
 
+  if (loading) {
+    return (
+      <RootLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-neon-magenta"></div>
+        </div>
+      </RootLayout>
+    )
+  }
+
+  if (error || !service) {
+    return (
+      <RootLayout>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-red-600 text-2xl">⚠️</span>
+            </div>
+            <h1 className="text-2xl font-bold text-white mb-2">Service Not Found</h1>
+            <p className="text-white/70 mb-6">{error || 'The requested service could not be found.'}</p>
+            <Button onClick={() => router.push('/catalog')} className="bg-gradient-to-r from-neon-magenta to-neon-cyan">
+              Back to Catalog
+            </Button>
+          </div>
+        </div>
+      </RootLayout>
+    )
+  }
+
   return (
     <RootLayout>
       <div className="min-h-screen py-8">
@@ -180,13 +256,13 @@ export default function ServiceDetailPage() {
               
               {/* Service Header */}
               <GlassCard className="p-6">
-                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r ${service.gradient} text-4xl mb-4`}>
-                  {service.image}
+                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r ${service.gradient || 'from-blue-500 to-purple-600'} text-4xl mb-4`}>
+                  {service.image || '🎮'}
                 </div>
                 <h1 className="text-3xl font-heading font-bold text-white mb-2">
                   {service.name}
                 </h1>
-                <p className="text-white/70 mb-4">{service.description}</p>
+                <p className="text-white/70 mb-4">{service.description || 'Top up untuk ' + service.name}</p>
                 
                 <div className="flex items-center gap-4 text-sm">
                   <div className="flex items-center text-green-400">
@@ -209,10 +285,10 @@ export default function ServiceDetailPage() {
                   {/* Customer ID Input */}
                   <div>
                     <label className="block text-white/80 text-sm font-medium mb-2">
-                      {service.inputLabel} *
+                      {service.inputLabel || 'User ID'} *
                     </label>
                     <Input
-                      placeholder={service.inputPlaceholder}
+                      placeholder={service.inputPlaceholder || 'Masukkan User ID'}
                       value={customerId}
                       onChange={(e) => setCustomerId(e.target.value)}
                       className={cn(

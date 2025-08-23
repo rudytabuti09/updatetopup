@@ -3,24 +3,79 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { RootLayout } from '@/components/layout/root-layout'
-import { Search as SearchIcon, Sparkles, Zap, Gamepad2, Star } from 'lucide-react'
+import { Search as SearchIcon, Sparkles, Zap, Gamepad2, Star, AlertCircle } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-// Catalog items (can be replaced with API data later)
-const catalogItems = [
-  { id: 'ml', title: 'Mobile Legends', category: 'mobile', icon: '⚔️', color: 'from-blue-500 to-purple-600', startingPrice: 'Rp 12.000', rating: 4.9, popular: true, description: 'Bang Bang Diamond' },
-  { id: 'ff', title: 'Free Fire', category: 'mobile', icon: '🔥', color: 'from-orange-500 to-red-600', startingPrice: 'Rp 10.000', rating: 4.8, popular: true, description: 'Diamond Top Up' },
-  { id: 'pubg', title: 'PUBG Mobile', category: 'mobile', icon: '🎯', color: 'from-yellow-500 to-orange-600', startingPrice: 'Rp 15.000', rating: 4.7, popular: true, description: 'UC Purchase' },
-  { id: 'valorant', title: 'Valorant', category: 'pc', icon: '🎮', color: 'from-red-500 to-pink-600', startingPrice: 'Rp 50.000', rating: 4.9, popular: true, description: 'Valorant Points' },
-  { id: 'genshin', title: 'Genshin Impact', category: 'mobile', icon: '⭐', color: 'from-purple-500 to-indigo-600', startingPrice: 'Rp 65.000', rating: 4.8, popular: false, description: 'Genesis Crystals' },
-  { id: 'cod', title: 'Call of Duty Mobile', category: 'mobile', icon: '🔫', color: 'from-green-500 to-teal-600', startingPrice: 'Rp 20.000', rating: 4.6, popular: false, description: 'CP Top Up' },
-  { id: 'steam', title: 'Steam Wallet', category: 'voucher', icon: '💳', color: 'from-gray-600 to-gray-800', startingPrice: 'Rp 60.000', rating: 5.0, popular: false, description: 'IDR Wallet Code' },
-  { id: 'google', title: 'Google Play', category: 'voucher', icon: '🎁', color: 'from-green-500 to-blue-600', startingPrice: 'Rp 50.000', rating: 4.9, popular: false, description: 'Gift Card' },
-  { id: 'lol', title: 'League of Legends', category: 'pc', icon: '🏆', color: 'from-cyan-500 to-blue-600', startingPrice: 'Rp 35.000', rating: 4.7, popular: false, description: 'Riot Points' },
-  { id: 'hsr', title: 'Honkai Star Rail', category: 'mobile', icon: '🌟', color: 'from-pink-500 to-purple-600', startingPrice: 'Rp 65.000', rating: 4.8, popular: false, description: 'Oneiric Shards' },
-  { id: 'tof', title: 'Tower of Fantasy', category: 'mobile', icon: '🗼', color: 'from-indigo-500 to-purple-600', startingPrice: 'Rp 45.000', rating: 4.5, popular: false, description: 'Tanium' },
-  { id: 'apex', title: 'Apex Legends', category: 'pc', icon: '🎪', color: 'from-red-600 to-orange-600', startingPrice: 'Rp 75.000', rating: 4.6, popular: false, description: 'Apex Coins' },
-] as const
+// Service interface from VIP Reseller API
+interface Product {
+  id: string
+  name: string
+  price: number
+  buyPrice: number
+  profit: number
+  sku: string
+  category: string
+  isActive: boolean
+  sortOrder: number
+}
+
+interface Service {
+  id: string
+  name: string
+  description?: string
+  logo?: string
+  provider: string
+  category: {
+    name: string
+    slug: string
+  }
+  products: Product[]
+}
+
+interface CatalogItem {
+  id: string
+  title: string
+  category: string
+  icon: string
+  color: string
+  startingPrice: string
+  rating: number
+  popular: boolean
+  description: string
+}
+
+// Helper function to map service to catalog item
+const mapServiceToCatalogItem = (service: Service): CatalogItem => {
+  // Get cheapest product price
+  const cheapestProduct = service.products
+    .filter(p => p.isActive)
+    .sort((a, b) => a.price - b.price)[0]
+  
+  // Category mapping
+  const categoryMap: Record<string, { icon: string, color: string, category: string }> = {
+    'Game': { icon: '🎮', color: 'from-blue-500 to-purple-600', category: 'mobile' },
+    'Mobile Game': { icon: '📱', color: 'from-green-500 to-teal-600', category: 'mobile' },
+    'PC Game': { icon: '💻', color: 'from-red-500 to-pink-600', category: 'pc' },
+    'Voucher': { icon: '🎁', color: 'from-purple-500 to-indigo-600', category: 'voucher' },
+    'E-Money': { icon: '💳', color: 'from-yellow-500 to-orange-600', category: 'voucher' },
+    'Pulsa': { icon: '📞', color: 'from-indigo-500 to-blue-600', category: 'mobile' }
+  }
+  
+  const categoryInfo = categoryMap[service.category.name] || 
+    { icon: '🎮', color: 'from-gray-500 to-gray-700', category: 'mobile' }
+  
+  return {
+    id: service.id,
+    title: service.name,
+    category: categoryInfo.category,
+    icon: categoryInfo.icon,
+    color: categoryInfo.color,
+    startingPrice: cheapestProduct ? `Rp ${cheapestProduct.price.toLocaleString('id-ID')}` : 'Rp -',
+    rating: 4.5 + Math.random() * 0.5, // Generate random rating between 4.5-5.0
+    popular: service.products.length > 3, // Popular if has many products
+    description: service.description || `Top up ${service.name}`
+  }
+}
 
 const filterCategories = [
   { id: 'all', label: 'All', icon: Gamepad2 },
@@ -33,11 +88,50 @@ export default function CatalogPage() {
   const [search, setSearch] = useState('')
   const [active, setActive] = useState<typeof filterCategories[number]['id']>('all')
   const [loading, setLoading] = useState(true)
+  const [services, setServices] = useState<Service[]>([])
+  const [error, setError] = useState<string | null>(null)
 
+  // Load services from API
   useEffect(() => {
-    const t = setTimeout(() => setLoading(false), 400)
-    return () => clearTimeout(t)
+    loadServices()
   }, [])
+
+  const loadServices = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      
+      // Try to get cached data first, fallback to VIP API if needed
+      const response = await fetch('/api/services?cached=true')
+      const result = await response.json()
+      
+      if (result.success) {
+        setServices(result.data)
+      } else {
+        // If cached fails, try fresh from VIP API
+        const freshResponse = await fetch('/api/services')
+        const freshResult = await freshResponse.json()
+        
+        if (freshResult.success) {
+          setServices(freshResult.data)
+        } else {
+          setError('Gagal memuat data layanan')
+        }
+      }
+    } catch (err) {
+      console.error('Error loading services:', err)
+      setError('Terjadi kesalahan saat memuat data')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Convert services to catalog items
+  const catalogItems = useMemo(() => {
+    return services
+      .filter(service => service.products.some(p => p.isActive)) // Only services with active products
+      .map(mapServiceToCatalogItem)
+  }, [services])
 
   const products = useMemo(() => {
     let items = [...catalogItems]
@@ -47,7 +141,7 @@ export default function CatalogPage() {
       items = items.filter(i => i.title.toLowerCase().includes(q) || i.description.toLowerCase().includes(q))
     }
     return items
-  }, [active, search])
+  }, [catalogItems, active, search])
 
   return (
     <RootLayout>
@@ -129,6 +223,20 @@ export default function CatalogPage() {
                   <div key={i} className="bg-white/60 rounded-xl h-64 animate-pulse" />
                 ))}
               </div>
+            ) : error ? (
+              <div className="text-center py-20">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-full bg-red-100 mb-4">
+                  <AlertCircle className="w-10 h-10 text-red-500" />
+                </div>
+                <h3 className="text-xl font-bold text-gray-800 mb-2">Gagal Memuat Data</h3>
+                <p className="text-gray-600 mb-6">{error}</p>
+                <button 
+                  onClick={loadServices}
+                  className="px-6 py-3 bg-gradient-to-r from-neon-magenta to-neon-cyan text-white font-bold rounded-lg hover:shadow-lg transition-all"
+                >
+                  Coba Lagi
+                </button>
+              </div>
             ) : products.length ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {products.map((p, idx) => (
@@ -157,7 +265,7 @@ export default function CatalogPage() {
 
                         <div className="flex items-center gap-1 mb-3">
                           <Star className="w-4 h-4 text-retro-gold fill-retro-gold" />
-                          <span className="text-sm font-semibold text-gray-700">{p.rating}</span>
+                          <span className="text-sm font-semibold text-gray-700">{p.rating.toFixed(1)}</span>
                         </div>
 
                         <div className="mb-4">

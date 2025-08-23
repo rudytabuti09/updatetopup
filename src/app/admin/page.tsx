@@ -65,82 +65,19 @@ export default function AdminDashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      // Mock data for demo - replace with actual API calls
-      setStats({
-        totalUsers: 2456,
-        totalOrders: 12847,
-        totalRevenue: 125670000,
-        pendingOrders: 23,
-        todayOrders: 87,
-        todayRevenue: 1450000,
-        activeUsers: 156,
-        systemAlerts: 3
-      })
-
-      setRecentActivity([
-        {
-          id: '1',
-          type: 'order',
-          description: 'Order baru #WMX-1234567890 dari user@example.com',
-          timestamp: '2024-01-15T10:30:00Z',
-          status: 'success'
-        },
-        {
-          id: '2',
-          type: 'payment',
-          description: 'Pembayaran gagal untuk order #WMX-1234567891',
-          timestamp: '2024-01-15T10:15:00Z',
-          status: 'error'
-        },
-        {
-          id: '3',
-          type: 'user',
-          description: 'User baru mendaftar: newuser@example.com',
-          timestamp: '2024-01-15T09:45:00Z',
-          status: 'success'
-        },
-        {
-          id: '4',
-          type: 'system',
-          description: 'VIP-Reseller API response time tinggi (>2s)',
-          timestamp: '2024-01-15T09:30:00Z',
-          status: 'warning'
-        }
-      ])
-
-      setRecentOrders([
-        {
-          id: '1',
-          orderNumber: 'WMX-1234567890',
-          user: 'user@example.com',
-          service: 'Mobile Legends - 86 Diamond',
-          amount: 15000,
-          status: 'SUCCESS',
-          createdAt: '2024-01-15T10:30:00Z'
-        },
-        {
-          id: '2',
-          orderNumber: 'WMX-1234567891',
-          user: 'gamer@example.com',
-          service: 'Free Fire - 70 Diamond',
-          amount: 10000,
-          status: 'PROCESSING',
-          createdAt: '2024-01-15T09:15:00Z'
-        },
-        {
-          id: '3',
-          orderNumber: 'WMX-1234567892',
-          user: 'customer@example.com',
-          service: 'Telkomsel - Pulsa 25.000',
-          amount: 26000,
-          status: 'PENDING',
-          createdAt: '2024-01-15T08:45:00Z'
-        }
-      ])
-
-      setLoading(false)
+      const response = await fetch('/api/admin/dashboard')
+      const result = await response.json()
+      
+      if (result.success) {
+        setStats(result.data.stats)
+        setRecentActivity(result.data.recentActivity)
+        setRecentOrders(result.data.recentOrders)
+      } else {
+        console.error('Failed to fetch dashboard data:', result.message)
+      }
     } catch (error) {
       console.error('Error fetching admin dashboard data:', error)
+    } finally {
       setLoading(false)
     }
   }
