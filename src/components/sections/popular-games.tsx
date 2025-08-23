@@ -1,7 +1,7 @@
 'use client'
 
 import Link from "next/link"
-import { Star, TrendingUp } from "lucide-react"
+import { Star, TrendingUp, Sparkles, Gamepad2, Zap } from "lucide-react"
 import { GlassCard } from "@/components/ui/glass-card"
 import { GradientButton } from "@/components/ui/gradient-button"
 
@@ -90,100 +90,139 @@ const popularGames = [
 
 export function PopularGames() {
   return (
-    <section className="py-20">
-      <div className="container mx-auto px-4">
+    <section className="py-20 relative bg-gradient-to-b from-transparent via-retro-lavender/5 to-transparent">
+      {/* Retro Pattern Background */}
+      <div className="absolute inset-0 opacity-10">
+        <div className="absolute inset-0 bg-grid-retro bg-[length:40px_40px]" />
+      </div>
+      
+      <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-heading font-bold mb-4">
-            Game <span className="gradient-text">Populer</span>
+          {/* Section Badge */}
+          <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-gradient-to-r from-neon-magenta/10 to-neon-cyan/10 border border-neon-magenta/20">
+            <Sparkles className="w-4 h-4 text-neon-magenta" />
+            <span className="text-sm font-retro font-semibold uppercase tracking-wider text-wmx-dark">Featured Games</span>
+          </div>
+          
+          <h2 className="text-4xl md:text-5xl font-heading font-black mb-4">
+            <span className="text-wmx-dark">HOT </span>
+            <span className="text-glow-magenta">GAMES</span>
           </h2>
-          <p className="text-white/70 max-w-2xl mx-auto">
-            Top up untuk game favorit kamu dengan harga terbaik dan proses yang super cepat
+          <p className="text-wmx-gray-600 max-w-2xl mx-auto font-sans">
+            Level up your gaming experience with instant top-ups and exclusive deals
           </p>
         </div>
 
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {popularGames.map((game) => (
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {popularGames.map((game, index) => (
               <Link key={game.id} href={`/catalog/${game.id}`}>
-                <GlassCard hover className="p-4 group relative overflow-hidden">
-                  {/* Popular Badge */}
-                  {game.isPopular && (
-                    <div className="absolute top-2 right-2 bg-gradient-primary text-white text-xs font-bold px-2 py-1 rounded-full flex items-center z-10">
-                      <TrendingUp className="h-3 w-3 mr-1" />
-                      Popular
-                    </div>
-                  )}
+                <div 
+                  className="group relative animate-slide-up"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <GlassCard hover className="p-0 overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-neon">
+                    {/* Popular Badge */}
+                    {game.isPopular && (
+                      <div className="absolute top-3 right-3 bg-gradient-to-r from-retro-gold to-retro-orange text-wmx-dark text-xs font-retro font-bold px-3 py-1 rounded-full flex items-center z-10 animate-pulse">
+                        <Zap className="h-3 w-3 mr-1" />
+                        HOT
+                      </div>
+                    )}
 
-                  {/* Game Icon with Gradient Background */}
-                  <div className={`relative mb-4 rounded-xl bg-gradient-to-br ${game.gradient} p-4 text-center`}>
-                    <div className="text-4xl md:text-5xl filter drop-shadow-lg">
-                      {game.image}
+                    {/* Game Icon with Retro Gradient */}
+                    <div className={`relative bg-gradient-to-br ${game.gradient} p-8 text-center overflow-hidden`}>
+                      <div className="absolute inset-0 bg-grid-retro bg-[length:20px_20px] opacity-20" />
+                      <div className="relative text-5xl md:text-6xl filter drop-shadow-2xl group-hover:scale-110 transition-transform duration-300">
+                        {game.image}
+                      </div>
+                      
+                      {/* Neon Glow Effect */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                      
+                      {/* Scan Line Effect */}
+                      <div className="absolute inset-x-0 h-px bg-white/50 top-0 group-hover:top-full transition-all duration-1000" />
                     </div>
-                    
-                    {/* Overlay on hover */}
-                    <div className="absolute inset-0 bg-black/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
 
-                  {/* Game Info */}
-                  <div className="space-y-2">
-                    <h3 className="font-bold text-white text-sm md:text-base group-hover:text-neon-blue transition-colors">
-                      {game.name}
-                    </h3>
-                    
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-white/60">{game.category}</span>
-                      <div className="flex items-center space-x-1">
-                        <Star className="h-3 w-3 text-yellow-400 fill-current" />
-                        <span className="text-white/70">{game.rating}</span>
+                    {/* Game Info */}
+                    <div className="p-4 space-y-3">
+                      <h3 className="font-heading font-bold text-wmx-dark text-base md:text-lg group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-neon-magenta group-hover:to-neon-cyan group-hover:bg-clip-text transition-all duration-300">
+                        {game.name}
+                      </h3>
+                      
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-retro uppercase tracking-wider text-wmx-gray-500">{game.category}</span>
+                        <div className="flex items-center gap-1">
+                          <Star className="h-3 w-3 text-retro-gold fill-current" />
+                          <span className="text-xs font-bold text-wmx-gray-700">{game.rating}</span>
+                        </div>
+                      </div>
+
+                      <div className="pt-2 border-t border-wmx-gray-200">
+                        <p className="text-sm font-semibold bg-gradient-to-r from-neon-magenta to-neon-cyan bg-clip-text text-transparent">
+                          {game.price}
+                        </p>
+                      </div>
+                      
+                      {/* Quick Action */}
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <button className="w-full py-2 px-4 bg-gradient-to-r from-neon-magenta to-neon-cyan text-white font-heading text-xs uppercase tracking-wider rounded-lg hover:shadow-neon transition-all">
+                          Top Up Now
+                        </button>
                       </div>
                     </div>
-
-                    <p className="text-neon-blue text-xs font-semibold">
-                      {game.price}
-                    </p>
-                  </div>
-
-                  {/* Hover Glow Effect */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${game.gradient} opacity-0 group-hover:opacity-10 transition-opacity rounded-2xl`} />
-                </GlassCard>
+                  </GlassCard>
+                </div>
               </Link>
             ))}
           </div>
 
           {/* View All Button */}
-          <div className="text-center mt-12">
+          <div className="text-center mt-16">
             <Link href="/catalog">
-              <GradientButton variant="secondary" size="lg">
-                Lihat Semua Game
+              <GradientButton variant="primary" size="xl" className="group">
+                <Gamepad2 className="mr-2 h-5 w-5 group-hover:rotate-12 transition-transform" />
+                EXPLORE ALL GAMES
               </GradientButton>
             </Link>
           </div>
         </div>
 
         {/* Other Services Quick Links */}
-        <div className="mt-20">
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-heading font-bold text-white mb-2">
-              Layanan <span className="gradient-text">Lainnya</span>
+        <div className="mt-24">
+          <div className="text-center mb-10">
+            <h3 className="text-3xl font-heading font-bold mb-2">
+              <span className="text-wmx-dark">MORE </span>
+              <span className="text-retro-gold">SERVICES</span>
             </h3>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {[
-              { name: "Pulsa & Data", icon: "📱", href: "/catalog?category=pulsa", color: "from-green-500 to-teal-600" },
-              { name: "E-Money", icon: "💳", href: "/catalog?category=emoney", color: "from-blue-500 to-cyan-600" },
-              { name: "Social Media", icon: "📸", href: "/catalog?category=sosmed", color: "from-pink-500 to-rose-600" },
-              { name: "PPOB", icon: "⚡", href: "/catalog?category=ppob", color: "from-yellow-500 to-orange-600" },
-            ].map((service) => (
+              { name: "Mobile Credit", icon: "📱", href: "/catalog?category=pulsa", gradient: "from-neon-green to-retro-sky" },
+              { name: "E-Wallet", icon: "💳", href: "/catalog?category=emoney", gradient: "from-neon-blue to-neon-cyan" },
+              { name: "Social Boost", icon: "🚀", href: "/catalog?category=sosmed", gradient: "from-neon-pink to-neon-magenta" },
+              { name: "Utilities", icon: "⚡", href: "/catalog?category=ppob", gradient: "from-retro-gold to-retro-orange" },
+            ].map((service, index) => (
               <Link key={service.name} href={service.href}>
-                <GlassCard hover className="p-4 text-center group">
-                  <div className={`w-12 h-12 mx-auto rounded-xl bg-gradient-to-br ${service.color} flex items-center justify-center text-2xl mb-3`}>
-                    {service.icon}
-                  </div>
-                  <h4 className="text-white font-semibold text-sm group-hover:text-neon-blue transition-colors">
-                    {service.name}
-                  </h4>
-                </GlassCard>
+                <div 
+                  className="group animate-slide-up"
+                  style={{ animationDelay: `${0.8 + index * 0.1}s` }}
+                >
+                  <GlassCard hover className="p-6 text-center relative overflow-hidden transition-all duration-300 hover:scale-105">
+                    <div className="relative z-10">
+                      <div className={`w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br ${service.gradient} flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform shadow-lg`}>
+                        {service.icon}
+                      </div>
+                      <h4 className="font-heading font-bold text-sm text-wmx-dark group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-neon-magenta group-hover:to-neon-cyan group-hover:bg-clip-text transition-all uppercase tracking-wide">
+                        {service.name}
+                      </h4>
+                    </div>
+                    
+                    {/* Background Glow */}
+                    <div className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+                  </GlassCard>
+                </div>
               </Link>
             ))}
           </div>

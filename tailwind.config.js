@@ -24,19 +24,10 @@ module.exports = {
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
-          50: "#eff6ff",
-          100: "#dbeafe",
-          500: "#3B82F6", // Main neon blue
-          600: "#2563eb",
-          700: "#1d4ed8",
-          900: "#1e3a8a",
         },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
-          500: "#6C63FF", // Main purple
-          600: "#5b52ff",
-          700: "#4c43e5",
         },
         destructive: {
           DEFAULT: "hsl(var(--destructive))",
@@ -58,25 +49,35 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Custom WMX TOPUP colors
+        // Retro-Modern Neon Colors
         neon: {
+          magenta: "#FF00FF",
+          cyan: "#00FFFF",
           blue: "#3B82F6",
-          purple: "#6C63FF",
-          cyan: "#06b6d4",
-          pink: "#ec4899",
+          purple: "#8B5CF6",
+          pink: "#EC4899",
+          green: "#00FF88",
+        },
+        retro: {
+          gold: "#FFD700",
+          orange: "#FF6B35",
+          sunset: "#FF4E50",
+          sky: "#87CEEB",
+          lavender: "#E6E6FA",
         },
         wmx: {
-          dark: "#0D0D0D",
+          light: "#F8F9FE",
+          dark: "#1A1A2E",
           gray: {
-            50: "#f9fafb",
-            100: "#f3f4f6",
-            200: "#e5e7eb",
-            300: "#d1d5db",
-            400: "#9ca3af",
-            500: "#6b7280",
-            600: "#4b5563",
+            50: "#FAFBFC",
+            100: "#F3F4F6",
+            200: "#E5E7EB",
+            300: "#D1D5DB",
+            400: "#9CA3AF",
+            500: "#6B7280",
+            600: "#4B5563",
             700: "#374151",
-            800: "#1f2937",
+            800: "#1F2937",
             900: "#111827",
           },
         },
@@ -88,7 +89,8 @@ module.exports = {
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
-        heading: ["Poppins", "Inter", "sans-serif"],
+        heading: ["Orbitron", "Oxanium", "system-ui", "sans-serif"],
+        retro: ["Oxanium", "Orbitron", "system-ui", "sans-serif"],
       },
       keyframes: {
         "accordion-down": {
@@ -108,8 +110,22 @@ module.exports = {
           "100%": { transform: "translateY(0)", opacity: "1" },
         },
         "glow": {
-          "0%, 100%": { boxShadow: "0 0 20px rgba(59, 130, 246, 0.3)" },
-          "50%": { boxShadow: "0 0 30px rgba(108, 99, 255, 0.4)" },
+          "0%, 100%": { boxShadow: "0 0 20px rgba(255, 0, 255, 0.3)" },
+          "50%": { boxShadow: "0 0 30px rgba(0, 255, 255, 0.4)" },
+        },
+        "neon-pulse": {
+          "0%, 100%": { 
+            opacity: "1",
+            boxShadow: "0 0 20px rgba(255, 0, 255, 0.5), 0 0 40px rgba(0, 255, 255, 0.3)"
+          },
+          "50%": { 
+            opacity: "0.8",
+            boxShadow: "0 0 30px rgba(255, 0, 255, 0.7), 0 0 60px rgba(0, 255, 255, 0.5)"
+          },
+        },
+        "scan-line": {
+          "0%": { transform: "translateY(-100%)" },
+          "100%": { transform: "translateY(100%)" },
         },
         "float": {
           "0%, 100%": { transform: "translateY(0px)" },
@@ -123,17 +139,25 @@ module.exports = {
         "slide-up": "slide-up 0.6s ease-out",
         "glow": "glow 2s ease-in-out infinite alternate",
         "float": "float 3s ease-in-out infinite",
+        "neon-pulse": "neon-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "scan-line": "scan-line 8s linear infinite",
       },
       backgroundImage: {
-        "gradient-primary": "linear-gradient(135deg, #3B82F6, #6C63FF)",
-        "gradient-secondary": "linear-gradient(135deg, #06b6d4, #3B82F6)",
-        "gradient-dark": "linear-gradient(135deg, #0D0D0D, #1f2937)",
+        "gradient-neon": "linear-gradient(135deg, #FF00FF, #00FFFF)",
+        "gradient-retro": "linear-gradient(135deg, #FFD700, #FF6B35)",
+        "gradient-sunset": "linear-gradient(135deg, #FF4E50, #FC913A)",
+        "gradient-cyber": "linear-gradient(135deg, #8B5CF6, #EC4899)",
+        "gradient-light": "linear-gradient(180deg, #E0E7FF 0%, #FECACA 50%, #FEF3C7 100%)",
+        "grid-retro": "linear-gradient(0deg, transparent 24%, rgba(255, 0, 255, 0.05) 25%, rgba(255, 0, 255, 0.05) 26%, transparent 27%, transparent 74%, rgba(255, 0, 255, 0.05) 75%, rgba(255, 0, 255, 0.05) 76%, transparent 77%, transparent)",
       },
       boxShadow: {
-        "glow-blue": "0 0 20px rgba(59, 130, 246, 0.3)",
-        "glow-purple": "0 0 20px rgba(108, 99, 255, 0.3)",
-        "glass": "0 8px 32px rgba(31, 38, 135, 0.37)",
-        "card-hover": "0 20px 40px rgba(0, 0, 0, 0.1)",
+        "glow-magenta": "0 0 20px rgba(255, 0, 255, 0.4)",
+        "glow-cyan": "0 0 20px rgba(0, 255, 255, 0.4)",
+        "glow-gold": "0 0 20px rgba(255, 215, 0, 0.4)",
+        "neon": "0 0 30px rgba(255, 0, 255, 0.3), 0 0 60px rgba(0, 255, 255, 0.2)",
+        "retro": "4px 4px 0px #FF6B35, 8px 8px 0px rgba(255, 107, 53, 0.4)",
+        "glass": "0 8px 32px rgba(31, 38, 135, 0.15)",
+        "card-hover": "0 20px 40px rgba(255, 0, 255, 0.15), 0 10px 20px rgba(0, 255, 255, 0.1)",
       },
       backdropBlur: {
         xs: "2px",

@@ -4,7 +4,7 @@ import * as React from "react"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
-import { Menu, X, Search, User, LogOut, Settings, ShoppingCart } from "lucide-react"
+import { Menu, X, Search, User, LogOut, Settings, ShoppingCart, Zap, Gamepad2 } from "lucide-react"
 import { Logo } from "@/components/ui/logo"
 import { GradientButton } from "@/components/ui/gradient-button"
 import { Button } from "@/components/ui/button"
@@ -12,10 +12,10 @@ import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
 
 const navigation = [
-  { name: "Home", href: "/" },
-  { name: "Katalog", href: "/catalog" },
-  { name: "Lacak Pesanan", href: "/tracking" },
-  { name: "FAQ", href: "/faq" },
+  { name: "HOME", href: "/", icon: Gamepad2 },
+  { name: "GAMES", href: "/catalog", icon: Zap },
+  { name: "TRACK", href: "/tracking" },
+  { name: "HELP", href: "/faq" },
 ]
 
 export function Navbar() {
@@ -52,46 +52,57 @@ export function Navbar() {
 
   return (
     <header className={cn(
-      "fixed top-4 left-1/2 transform -translate-x-1/2 w-full max-w-6xl mx-auto z-50 px-4 transition-all duration-300",
-      isScrolled ? "top-2" : "top-4"
+      "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
+      isScrolled ? "bg-white/95 backdrop-blur-lg shadow-lg" : "bg-transparent"
     )}>
-      <nav className={cn(
-        "rounded-2xl px-6 py-4 transition-all duration-300",
-        isScrolled 
-          ? "glass backdrop-blur-xl border border-white/20 shadow-2xl" 
-          : "bg-transparent"
-      )}>
+      <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neon-magenta to-transparent opacity-50" />
+      <nav className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex-shrink-0">
-            <Logo size="md" variant="gradient" />
+          <Link href="/" className="flex-shrink-0 group">
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Gamepad2 className="h-8 w-8 text-neon-magenta group-hover:text-neon-cyan transition-colors duration-300" />
+                <div className="absolute inset-0 bg-neon-magenta/20 blur-lg group-hover:bg-neon-cyan/20 transition-colors duration-300" />
+              </div>
+              <span className="font-heading font-bold text-xl bg-gradient-to-r from-neon-magenta to-neon-cyan bg-clip-text text-transparent">
+                WMX
+              </span>
+            </div>
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-8">
+          <div className="hidden lg:flex items-center space-x-1">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 href={item.href}
                 className={cn(
-                  "text-sm font-medium transition-colors hover:text-neon-blue",
+                  "relative px-4 py-2 text-sm font-heading font-semibold uppercase tracking-wider transition-all duration-300 group",
                   pathname === item.href 
-                    ? "text-neon-blue" 
-                    : "text-white/80"
+                    ? "text-neon-magenta" 
+                    : "text-wmx-gray-700 hover:text-neon-magenta"
                 )}
               >
-                {item.name}
+                <span className="relative z-10 flex items-center gap-2">
+                  {item.icon && <item.icon className="w-4 h-4" />}
+                  {item.name}
+                </span>
+                {pathname === item.href && (
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-neon-magenta to-neon-cyan" />
+                )}
+                <div className="absolute inset-0 bg-neon-magenta/5 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 rounded-lg" />
               </Link>
             ))}
           </div>
 
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center space-x-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 h-4 w-4" />
+            <div className="relative group">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-wmx-gray-400 h-4 w-4 group-focus-within:text-neon-magenta transition-colors" />
               <Input
-                placeholder="Cari game..."
-                className="w-64 pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60"
+                placeholder="Search games..."
+                className="w-64 pl-10 bg-white border border-wmx-gray-200 text-wmx-dark placeholder:text-wmx-gray-400 focus:border-neon-magenta focus:ring-1 focus:ring-neon-magenta/20 rounded-lg transition-all"
               />
             </div>
             
@@ -102,7 +113,7 @@ export function Navbar() {
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className="text-white hover:text-neon-blue transition-colors"
+                  className="text-wmx-dark hover:text-neon-magenta transition-colors font-retro"
                   onClick={() => setShowUserMenu(!showUserMenu)}
                 >
                   <User className="h-4 w-4 mr-2" />
@@ -110,7 +121,7 @@ export function Navbar() {
                 </Button>
                 
                 {showUserMenu && (
-                  <div className="absolute right-0 top-full mt-2 w-48 bg-white/95 backdrop-blur-lg rounded-lg shadow-xl border border-white/20 py-2 z-50">
+                  <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-xl border border-neon-magenta/20 py-2 z-50 overflow-hidden">
                     <div className="px-3 py-2 border-b border-gray-200">
                       <p className="text-sm font-medium text-gray-900">{session.user.name || 'User'}</p>
                       <p className="text-xs text-gray-500">{session.user.email}</p>
@@ -162,13 +173,13 @@ export function Navbar() {
               </div>
             ) : (
               <Button 
-                variant="ghost" 
+                variant="neon" 
                 size="sm" 
-                className="text-white hover:text-neon-blue transition-colors"
+                className="font-heading uppercase"
                 onClick={() => router.push('/auth/signin')}
               >
                 <User className="h-4 w-4 mr-2" />
-                Masuk
+                Login
               </Button>
             )}
           </div>
@@ -177,7 +188,7 @@ export function Navbar() {
           <Button
             variant="ghost"
             size="sm"
-            className="lg:hidden text-white"
+            className="lg:hidden text-wmx-dark hover:text-neon-magenta"
             onClick={() => setIsMenuOpen(!isMenuOpen)}
           >
             {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
