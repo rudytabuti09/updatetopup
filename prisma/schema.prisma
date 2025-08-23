@@ -1,0 +1,285 @@
+// WMX TOPUP Database Schema
+// Comprehensive schema for topup service platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// User Management
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  phone     String?  @unique
+  avatar    String?
+  password  String
+  role      UserRole @default(USER)
+  balance   Float    @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  orders      Order[]
+  transactions Transaction[]
+  deposits     Deposit[]
+
+  @@map("users")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPER_ADMIN
+}
+
+// Product Categories and Services
+model Category {
+  id          String    @id @default(cuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?
+  icon        String?
+  isActive    Boolean   @default(true)
+  sortOrder   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  services    Service[]
+
+  @@map("categories")
+}
+
+model Service {
+  id          String   @id @default(cuid())
+  categoryId  String
+  name        String
+  slug        String   @unique
+  description String?
+  logo        String?
+  provider    String   @unique // VIP-Reseller service code
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  category Category @relation(fields: [categoryId], references: [id])
+  products Product[]
+  orders   Order[]
+
+  @@map("services")
+}
+
+model Product {
+  id          String  @id @default(cuid())
+  serviceId   String
+  name        String
+  description String?
+  price       Float
+  buyPrice    Float   // Cost from provider
+  profit      Float   @default(0)
+  sku         String  @unique // VIP-Reseller product code
+  category    String  // Game, Pulsa, E-Money, etc.
+  isActive    Boolean @default(true)
+  sortOrder   Int     @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  service Service @relation(fields: [serviceId], references: [id])
+  orders  OrderItem[]
+
+  @@map("products")
+}
+
+// Orders and Transactions
+model Order {
+  id            String      @id @default(cuid())
+  orderNumber   String      @unique
+  userId        String?
+  serviceId     String
+  customerData  Json        // { userId, nickname, phone, etc }
+  totalAmount   Float
+  status        OrderStatus @default(PENDING)
+  paymentMethod String?
+  paymentId     String?     // Midtrans transaction ID
+  externalId    String?     // VIP-Reseller order ID
+  notes         String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  expiredAt     DateTime?   // Payment expiry
+
+  // Relations
+  user      User?       @relation(fields: [userId], references: [id])
+  service   Service     @relation(fields: [serviceId], references: [id])
+  items     OrderItem[]
+  payment   Payment?
+  webhooks  Webhook[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String
+  productId String
+  quantity  Int    @default(1)
+  price     Float
+  total     Float
+
+  // Relations
+  order   Order   @relation(fields: [orderId], references: [id])
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+enum OrderStatus {
+  PENDING
+  WAITING_PAYMENT
+  PROCESSING
+  SUCCESS
+  FAILED
+  CANCELLED
+  REFUNDED
+}
+
+// Payment Management
+model Payment {
+  id                String        @id @default(cuid())
+  orderId           String        @unique
+  amount            Float
+  method            PaymentMethod
+  status            PaymentStatus @default(PENDING)
+  transactionId     String?       // Midtrans transaction ID
+  paymentType       String?       // bank_transfer, qris, etc.
+  vaNumber          String?       // Virtual Account number
+  qrisUrl           String?       // QRIS URL
+  expiryTime        DateTime?
+  paidAt            DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  // Relations
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@map("payments")
+}
+
+enum PaymentMethod {
+  BANK_TRANSFER
+  E_WALLET
+  QRIS
+  CREDIT_CARD
+  BALANCE
+}
+
+enum PaymentStatus {
+  PENDING
+  SETTLEMENT
+  FAILED
+  EXPIRED
+  CANCELLED
+}
+
+// User Balance and Transactions
+model Transaction {
+  id          String          @id @default(cuid())
+  userId      String
+  type        TransactionType
+  amount      Float
+  description String
+  reference   String?         // Order ID or other reference
+  balanceBefore Float
+  balanceAfter  Float
+  createdAt   DateTime        @default(now())
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("transactions")
+}
+
+enum TransactionType {
+  DEPOSIT
+  PURCHASE
+  REFUND
+  BONUS
+  DEDUCTION
+}
+
+model Deposit {
+  id            String        @id @default(cuid())
+  userId        String
+  amount        Float
+  method        PaymentMethod
+  status        PaymentStatus @default(PENDING)
+  transactionId String?
+  notes         String?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  // Relations
+  user User @relation(fields: [userId], references: [id])
+
+  @@map("deposits")
+}
+
+// Webhook Management
+model Webhook {
+  id        String      @id @default(cuid())
+  orderId   String?
+  type      WebhookType
+  source    String      // midtrans, vip-reseller
+  payload   Json
+  processed Boolean     @default(false)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  // Relations
+  order Order? @relation(fields: [orderId], references: [id])
+
+  @@map("webhooks")
+}
+
+enum WebhookType {
+  PAYMENT_NOTIFICATION
+  ORDER_STATUS_UPDATE
+  BALANCE_UPDATE
+}
+
+// System Configuration
+model Config {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+  type  String @default("string")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("configs")
+}
+
+// Promotional Banners
+model Banner {
+  id        String   @id @default(cuid())
+  title     String
+  subtitle  String?
+  image     String
+  link      String?
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  startDate DateTime?
+  endDate   DateTime?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("banners")
+}
