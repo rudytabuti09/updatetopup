@@ -130,10 +130,10 @@ export function Navbar() {
             </div>
             
             {!isClient ? (
-              <div className="w-16 h-8 bg-white/10 rounded animate-pulse" />
+              <div className="w-20 h-9 bg-white/10 rounded animate-pulse" />
             ) : status === 'loading' ? (
-              <div className="w-16 h-8 bg-white/10 rounded animate-pulse" />
-            ) : session?.user ? (
+              <div className="w-20 h-9 bg-white/10 rounded animate-pulse" />
+            ) : status === 'authenticated' && session?.user ? (
               <div className="relative user-menu-container">
                 <Button 
                   variant="ghost" 

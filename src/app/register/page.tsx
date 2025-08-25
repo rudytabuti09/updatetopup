@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Eye, EyeOff, Mail, Lock, User, Gamepad2, Zap, Shield, Star, ArrowRight } from 'lucide-react'
+import { Eye, EyeOff, Mail, Lock, User, Gamepad2, Zap, Shield, Star, ArrowRight, Github } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -11,7 +11,7 @@ import { GlassCard } from '@/components/ui/glass-card'
 import { GradientButton } from '@/components/ui/gradient-button'
 import { cn } from '@/lib/utils'
 
-export default function SignUpPage() {
+export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -63,7 +63,7 @@ export default function SignUpPage() {
       })
 
       if (response.ok) {
-        router.push('/auth/signin?message=Account created successfully')
+        router.push('/login?message=Account created successfully')
       } else {
         const data = await response.json()
         setError(data.error || 'Registration failed')
@@ -325,7 +325,7 @@ export default function SignUpPage() {
               <div className="text-sm text-wmx-gray-600">
                 Already have an account?{' '}
                 <Link
-                  href="/auth/signin"
+                  href="/login"
                   className="text-neon-cyan hover:text-neon-magenta font-medium transition-colors"
                 >
                   Sign in here

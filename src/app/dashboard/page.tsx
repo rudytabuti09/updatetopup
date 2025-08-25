@@ -136,11 +136,11 @@ export default function DashboardPage() {
       
       {/* Welcome Section */}
       <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold text-white mb-2">
-          Selamat datang, {session?.user.name}! 👋
+        <h1 className="text-3xl font-heading font-bold text-wmx-dark mb-2">
+          <span className="text-glow-magenta">Welcome back,</span> {session?.user.name}! 🎮
         </h1>
-        <p className="text-white/70">
-          Kelola pesanan dan lihat statistik akun Anda di sini
+        <p className="text-wmx-gray-600">
+          Manage your orders and track your gaming activities
         </p>
       </div>
 
@@ -148,53 +148,57 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         
         {/* Total Orders */}
-        <GlassCard>
+        <GlassCard hover>
           <div className="flex items-center">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
-              <ShoppingBag className="h-6 w-6 text-white" />
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-neon-cyan to-neon-blue flex items-center justify-center relative">
+              <ShoppingBag className="h-6 w-6 text-white relative z-10" />
+              <div className="absolute inset-0 bg-neon-cyan/20 blur-lg rounded-lg" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-white/70">Total Pesanan</p>
-              <p className="text-2xl font-bold text-white">{stats.totalOrders}</p>
+              <p className="text-sm font-medium text-wmx-gray-600">Total Orders</p>
+              <p className="text-2xl font-bold text-glow-cyan">{stats.totalOrders}</p>
             </div>
           </div>
         </GlassCard>
 
         {/* Total Spent */}
-        <GlassCard>
+        <GlassCard hover>
           <div className="flex items-center">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center">
-              <TrendingUp className="h-6 w-6 text-white" />
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-retro-gold to-retro-orange flex items-center justify-center relative">
+              <TrendingUp className="h-6 w-6 text-white relative z-10" />
+              <div className="absolute inset-0 bg-retro-gold/20 blur-lg rounded-lg" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-white/70">Total Belanja</p>
-              <p className="text-2xl font-bold text-white">{formatCurrency(stats.totalSpent)}</p>
+              <p className="text-sm font-medium text-wmx-gray-600">Total Spent</p>
+              <p className="text-2xl font-bold text-retro-gold">{formatCurrency(stats.totalSpent)}</p>
             </div>
           </div>
         </GlassCard>
 
         {/* Balance */}
-        <GlassCard>
+        <GlassCard hover>
           <div className="flex items-center">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 flex items-center justify-center">
-              <Wallet className="h-6 w-6 text-white" />
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-neon-magenta to-neon-pink flex items-center justify-center relative">
+              <Wallet className="h-6 w-6 text-white relative z-10" />
+              <div className="absolute inset-0 bg-neon-magenta/20 blur-lg rounded-lg" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-white/70">Saldo</p>
-              <p className="text-2xl font-bold text-white">{formatCurrency(stats.balance)}</p>
+              <p className="text-sm font-medium text-wmx-gray-600">Balance</p>
+              <p className="text-2xl font-bold text-glow-magenta">{formatCurrency(stats.balance)}</p>
             </div>
           </div>
         </GlassCard>
 
         {/* Pending Orders */}
-        <GlassCard>
+        <GlassCard hover>
           <div className="flex items-center">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center">
-              <Clock className="h-6 w-6 text-white" />
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-neon-purple to-retro-orange flex items-center justify-center relative">
+              <Clock className="h-6 w-6 text-white relative z-10" />
+              <div className="absolute inset-0 bg-neon-purple/20 blur-lg rounded-lg" />
             </div>
             <div className="ml-4">
-              <p className="text-sm font-medium text-white/70">Pesanan Pending</p>
-              <p className="text-2xl font-bold text-white">{stats.pendingOrders}</p>
+              <p className="text-sm font-medium text-wmx-gray-600">Pending Orders</p>
+              <p className="text-2xl font-bold text-neon-purple">{stats.pendingOrders}</p>
             </div>
           </div>
         </GlassCard>
@@ -205,16 +209,16 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Orders List */}
-        <GlassCard>
+        <GlassCard hover>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-white">Pesanan Terbaru</h2>
+            <h2 className="text-xl font-heading font-bold text-wmx-dark">Recent Orders</h2>
             <GradientButton 
               variant="secondary" 
               size="sm"
               onClick={() => router.push('/dashboard/orders')}
             >
               <div className="flex items-center">
-                Lihat Semua
+                View All
                 <ArrowRight className="ml-2 h-4 w-4" />
               </div>
             </GradientButton>
@@ -222,26 +226,27 @@ export default function DashboardPage() {
 
           <div className="space-y-4">
             {recentOrders.map((order) => (
-              <div key={order.id} className="p-4 rounded-lg bg-white/5 border border-white/10">
+              <div key={order.id} className="p-4 rounded-lg bg-white/80 border border-neon-magenta/20 hover:border-neon-magenta/40 transition-all duration-300 hover:shadow-glow-magenta group">
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center">
-                      <ShoppingBag className="h-4 w-4 text-white" />
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-neon-cyan to-neon-blue flex items-center justify-center relative">
+                      <ShoppingBag className="h-4 w-4 text-white relative z-10" />
+                      <div className="absolute inset-0 bg-neon-cyan/20 blur-lg rounded-lg" />
                     </div>
                     <div>
-                      <p className="font-medium text-white text-sm">{order.service}</p>
-                      <p className="text-xs text-white/60">{order.orderNumber}</p>
+                      <p className="font-medium text-wmx-dark text-sm font-retro">{order.service}</p>
+                      <p className="text-xs text-wmx-gray-600">{order.orderNumber}</p>
                     </div>
                   </div>
                   <StatusBadge status={convertOrderStatus(order.status)} />
                 </div>
                 
                 <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center text-white/60">
+                  <div className="flex items-center text-wmx-gray-600">
                     <Calendar className="h-4 w-4 mr-1" />
                     {formatDate(order.createdAt)}
                   </div>
-                  <div className="font-bold text-neon-blue">
+                  <div className="font-bold text-glow-cyan">
                     {formatCurrency(order.amount)}
                   </div>
                 </div>
@@ -251,8 +256,8 @@ export default function DashboardPage() {
         </GlassCard>
 
         {/* Quick Actions */}
-        <GlassCard>
-          <h2 className="text-xl font-bold text-white mb-6">Aksi Cepat</h2>
+        <GlassCard hover>
+          <h2 className="text-xl font-heading font-bold text-wmx-dark mb-6">Quick Actions</h2>
           
           <div className="space-y-4">
             <GradientButton 
@@ -260,7 +265,7 @@ export default function DashboardPage() {
               onClick={() => router.push('/catalog')}
             >
               <ShoppingBag className="mr-3 h-5 w-5" />
-              Beli Produk Baru
+              Shop New Products
             </GradientButton>
             
             <GradientButton 
@@ -269,42 +274,42 @@ export default function DashboardPage() {
               onClick={() => router.push('/dashboard/orders')}
             >
               <Clock className="mr-3 h-5 w-5" />
-              Cek Status Pesanan
+              Check Order Status
             </GradientButton>
             
             <GradientButton 
-              variant="secondary"
+              variant="sunset"
               className="w-full justify-start"
               onClick={() => router.push('/dashboard/balance')}
             >
               <Wallet className="mr-3 h-5 w-5" />
-              Top Up Saldo
+              Top Up Balance
             </GradientButton>
           </div>
 
           {/* Recent Activity */}
           <div className="mt-8">
-            <h3 className="text-lg font-semibold text-white mb-4">Aktivitas Terbaru</h3>
+            <h3 className="text-lg font-heading font-semibold text-wmx-dark mb-4">Recent Activity</h3>
             <div className="space-y-3">
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 rounded-full bg-green-400 mt-2"></div>
+              <div className="flex items-start space-x-3 p-3 rounded-lg bg-white/60 border border-neon-green/20">
+                <div className="w-2 h-2 rounded-full bg-neon-green mt-2 animate-pulse"></div>
                 <div>
-                  <p className="text-sm text-white">Pesanan ML Diamond berhasil diproses</p>
-                  <p className="text-xs text-white/60">2 jam yang lalu</p>
+                  <p className="text-sm text-wmx-dark font-medium">ML Diamond order completed</p>
+                  <p className="text-xs text-wmx-gray-600">2 hours ago</p>
                 </div>
               </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 rounded-full bg-blue-400 mt-2"></div>
+              <div className="flex items-start space-x-3 p-3 rounded-lg bg-white/60 border border-neon-cyan/20">
+                <div className="w-2 h-2 rounded-full bg-neon-cyan mt-2 animate-pulse"></div>
                 <div>
-                  <p className="text-sm text-white">Login dari perangkat baru</p>
-                  <p className="text-xs text-white/60">1 hari yang lalu</p>
+                  <p className="text-sm text-wmx-dark font-medium">Login from new device</p>
+                  <p className="text-xs text-wmx-gray-600">1 day ago</p>
                 </div>
               </div>
-              <div className="flex items-start space-x-3">
-                <div className="w-2 h-2 rounded-full bg-purple-400 mt-2"></div>
+              <div className="flex items-start space-x-3 p-3 rounded-lg bg-white/60 border border-neon-purple/20">
+                <div className="w-2 h-2 rounded-full bg-neon-purple mt-2 animate-pulse"></div>
                 <div>
-                  <p className="text-sm text-white">Profil berhasil diperbarui</p>
-                  <p className="text-xs text-white/60">3 hari yang lalu</p>
+                  <p className="text-sm text-wmx-dark font-medium">Profile updated successfully</p>
+                  <p className="text-xs text-wmx-gray-600">3 days ago</p>
                 </div>
               </div>
             </div>

@@ -13,10 +13,10 @@ export default function LoginRedirect() {
   }, [router])
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-white flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-wmx-light to-white flex items-center justify-center">
       <div className="text-center">
         <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-neon-magenta" />
-        <p className="text-gray-600">Redirecting to login page...</p>
+        <p className="text-wmx-gray-600">Redirecting to sign in page...</p>
       </div>
     </div>
   )

@@ -58,7 +58,16 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-wmx-light via-retro-lavender/10 to-wmx-light">
+      {/* Retro Grid Background */}
+      <div className="absolute inset-0 bg-grid-retro bg-[length:50px_50px] opacity-10" />
+      
+      {/* Animated Neon Orbs */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-20 right-20 w-64 h-64 bg-neon-magenta/5 rounded-full blur-3xl animate-float" />
+        <div className="absolute bottom-32 left-20 w-80 h-80 bg-neon-cyan/5 rounded-full blur-3xl animate-float" style={{animationDelay: '3s'}} />
+        <div className="absolute top-1/3 left-1/3 w-40 h-40 bg-retro-gold/5 rounded-full blur-3xl animate-pulse" />
+      </div>
       
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
@@ -115,14 +124,15 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </div>
 
               {/* User Info */}
-              <div className="p-6 border-b border-white/10">
+              <div className="p-6 border-b border-wmx-gray-200">
                 <div className="flex items-center">
-                  <div className="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center">
-                    <User className="h-5 w-5 text-white" />
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-r from-neon-magenta to-neon-cyan flex items-center justify-center relative">
+                    <User className="h-5 w-5 text-white relative z-10" />
+                    <div className="absolute inset-0 bg-neon-magenta/20 blur-lg rounded-full" />
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm font-medium text-white">{session.user.name}</p>
-                    <p className="text-xs text-white/60">{session.user.email}</p>
+                    <p className="text-sm font-medium text-wmx-dark font-heading">{session.user.name}</p>
+                    <p className="text-xs text-wmx-gray-600">{session.user.email}</p>
                   </div>
                 </div>
               </div>
@@ -135,10 +145,10 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                     <button
                       key={item.name}
                       onClick={() => router.push(item.href)}
-                      className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      className={`w-full flex items-center px-3 py-2 text-sm font-medium rounded-lg transition-colors font-retro ${
                         isActive
-                          ? 'bg-gradient-primary text-white'
-                          : 'text-white/70 hover:text-white hover:bg-white/10'
+                          ? 'bg-gradient-to-r from-neon-magenta to-neon-cyan text-white shadow-neon'
+                          : 'text-wmx-gray-700 hover:text-wmx-dark hover:bg-neon-magenta/10'
                       }`}
                     >
                       <item.icon className="h-5 w-5 mr-3" />
@@ -149,13 +159,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
               </nav>
 
               {/* Sign Out */}
-              <div className="p-4 border-t border-white/10">
+              <div className="p-4 border-t border-wmx-gray-200">
                 <button
                   onClick={handleSignOut}
-                  className="w-full flex items-center px-3 py-2 text-sm font-medium text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                  className="w-full flex items-center px-3 py-2 text-sm font-medium text-wmx-gray-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors font-retro"
                 >
                   <LogOut className="h-5 w-5 mr-3" />
-                  Keluar
+                  Sign Out
                 </button>
               </div>
 

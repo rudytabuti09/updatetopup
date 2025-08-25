@@ -5,6 +5,10 @@ import { prisma } from '@/lib/prisma'
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
+  // Force NEXTAUTH_URL for production
+  ...(process.env.NODE_ENV === 'production' && {
+    url: process.env.NEXTAUTH_URL || 'https://topup.wmxservices.store',
+  }),
   providers: [
     CredentialsProvider({
       name: 'credentials',

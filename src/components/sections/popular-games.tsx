@@ -90,88 +90,126 @@ const popularGames = [
 
 export function PopularGames() {
   return (
-    <section className="py-20 relative bg-gradient-to-b from-transparent via-retro-lavender/5 to-transparent">
-      {/* Retro Pattern Background */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute inset-0 bg-grid-retro bg-[length:40px_40px]" />
+    <section className="py-24 relative overflow-hidden bg-gradient-to-b from-transparent via-wmx-dark/5 to-transparent">
+      {/* Animated Grid Background */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(255,0,255,0.1)_1px,transparent_1px),linear-gradient(90deg,rgba(0,255,255,0.1)_1px,transparent_1px)] bg-[size:40px_40px] opacity-20 animate-pulse" />
+        {/* Floating Particles */}
+        <div className="absolute top-20 left-10 w-2 h-2 bg-neon-magenta rounded-full animate-float opacity-60" />
+        <div className="absolute top-32 right-20 w-3 h-3 bg-neon-cyan rounded-full animate-float opacity-40" style={{animationDelay: '1s'}} />
+        <div className="absolute bottom-40 left-1/4 w-1 h-1 bg-retro-gold rounded-full animate-float opacity-80" style={{animationDelay: '2s'}} />
+        <div className="absolute bottom-20 right-1/3 w-2 h-2 bg-neon-pink rounded-full animate-float opacity-50" style={{animationDelay: '3s'}} />
       </div>
       
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="text-center mb-16">
-          {/* Section Badge */}
-          <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-gradient-to-r from-neon-magenta/10 to-neon-cyan/10 border border-neon-magenta/20">
-            <Sparkles className="w-4 h-4 text-neon-magenta" />
-            <span className="text-sm font-retro font-semibold uppercase tracking-wider text-wmx-dark">Featured Games</span>
+      <div className="container mx-auto px-6 relative z-10">
+        <div className="text-center mb-20">
+          {/* Retro Gaming Badge */}
+          <div className="inline-block mb-8 relative group">
+            <div className="absolute inset-0 bg-gradient-to-r from-neon-magenta to-neon-cyan rounded-full blur-lg opacity-60 group-hover:opacity-100 transition-opacity animate-pulse" />
+            <div className="relative bg-wmx-dark/90 backdrop-blur-sm border-2 border-neon-magenta rounded-full px-6 py-3 flex items-center gap-3">
+              <Gamepad2 className="w-5 h-5 text-neon-magenta animate-pulse" />
+              <span className="text-sm font-mono font-bold uppercase tracking-widest text-white">POPULAR GAMES</span>
+              <div className="flex gap-1">
+                <div className="w-2 h-2 bg-neon-cyan rounded-full animate-ping" />
+                <div className="w-2 h-2 bg-neon-magenta rounded-full animate-ping" style={{animationDelay: '0.5s'}} />
+                <div className="w-2 h-2 bg-retro-gold rounded-full animate-ping" style={{animationDelay: '1s'}} />
+              </div>
+            </div>
           </div>
           
-          <h2 className="text-4xl md:text-5xl font-heading font-black mb-4">
-            <span className="text-wmx-dark">HOT </span>
-            <span className="text-glow-magenta">GAMES</span>
+          <h2 className="text-5xl md:text-7xl font-mono font-black mb-6 relative">
+            <span className="bg-gradient-to-r from-neon-magenta via-neon-cyan to-neon-pink bg-clip-text text-transparent animate-pulse">
+              &gt; HOT GAMES_
+            </span>
+            <div className="absolute -right-2 top-0 w-1 h-full bg-neon-cyan animate-pulse" />
           </h2>
-          <p className="text-wmx-gray-600 max-w-2xl mx-auto font-sans">
-            Level up your gaming experience with instant top-ups and exclusive deals
+          <p className="text-wmx-gray-400 max-w-3xl mx-auto font-mono text-lg leading-relaxed">
+            [ SYSTEM ONLINE ] Boost your gaming performance with instant digital top-ups
           </p>
         </div>
 
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {popularGames.map((game, index) => (
               <Link key={game.id} href={`/catalog/${game.id}`}>
                 <div 
                   className="group relative animate-slide-up"
-                  style={{ animationDelay: `${index * 0.1}s` }}
+                  style={{ animationDelay: `${index * 0.15}s` }}
                 >
-                  <GlassCard hover className="p-0 overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-neon">
+                  {/* Outer Glow Effect */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-neon-magenta/20 to-neon-cyan/20 rounded-2xl blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 scale-110" />
+                  
+                  {/* Main Card */}
+                  <div className="relative bg-wmx-dark/40 backdrop-blur-sm border-2 border-neon-magenta/30 rounded-2xl overflow-hidden transition-all duration-500 hover:border-neon-cyan/60 hover:shadow-[0_0_30px_rgba(255,0,255,0.3)] group-hover:scale-105">
                     {/* Popular Badge */}
                     {game.isPopular && (
-                      <div className="absolute top-3 right-3 bg-gradient-to-r from-retro-gold to-retro-orange text-wmx-dark text-xs font-retro font-bold px-3 py-1 rounded-full flex items-center z-10 animate-pulse">
-                        <Zap className="h-3 w-3 mr-1" />
-                        HOT
+                      <div className="absolute top-3 right-3 z-20">
+                        <div className="relative">
+                          <div className="absolute inset-0 bg-gradient-to-r from-retro-gold to-retro-orange rounded-lg blur-sm animate-pulse" />
+                          <div className="relative bg-gradient-to-r from-retro-gold to-retro-orange text-wmx-dark text-xs font-mono font-bold px-3 py-1 rounded-lg flex items-center border border-retro-gold/50">
+                            <Zap className="h-3 w-3 mr-1 animate-bounce" />
+                            <span className="tracking-wider">HOT</span>
+                          </div>
+                        </div>
                       </div>
                     )}
 
-                    {/* Game Icon with Retro Gradient */}
-                    <div className={`relative bg-gradient-to-br ${game.gradient} p-8 text-center overflow-hidden`}>
-                      <div className="absolute inset-0 bg-grid-retro bg-[length:20px_20px] opacity-20" />
-                      <div className="relative text-5xl md:text-6xl filter drop-shadow-2xl group-hover:scale-110 transition-transform duration-300">
-                        {game.image}
+                    {/* Game Icon Section */}
+                    <div className="relative h-32 overflow-hidden">
+                      {/* Animated Background */}
+                      <div className={`absolute inset-0 bg-gradient-to-br ${game.gradient} opacity-80`} />
+                      <div className="absolute inset-0 bg-[linear-gradient(45deg,transparent_48%,rgba(255,255,255,0.1)_49%,rgba(255,255,255,0.1)_51%,transparent_52%)] bg-[length:20px_20px] animate-pulse" />
+                      
+                      {/* Scan Lines */}
+                      <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_98%,rgba(0,255,255,0.3)_100%)] bg-[length:50px_100%] animate-[slide_2s_linear_infinite]" />
+                      
+                      {/* Game Icon */}
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="text-6xl filter drop-shadow-[0_0_20px_rgba(255,255,255,0.5)] group-hover:scale-125 group-hover:rotate-12 transition-all duration-500">
+                          {game.image}
+                        </div>
                       </div>
                       
-                      {/* Neon Glow Effect */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                      
-                      {/* Scan Line Effect */}
-                      <div className="absolute inset-x-0 h-px bg-white/50 top-0 group-hover:top-full transition-all duration-1000" />
+                      {/* Hover Overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-neon-cyan/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     </div>
 
-                    {/* Game Info */}
-                    <div className="p-4 space-y-3">
-                      <h3 className="font-heading font-bold text-wmx-dark text-base md:text-lg group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-neon-magenta group-hover:to-neon-cyan group-hover:bg-clip-text transition-all duration-300">
+                    {/* Game Info Section */}
+                    <div className="p-5 space-y-4 bg-gradient-to-b from-wmx-dark/60 to-wmx-dark/80">
+                      {/* Game Name */}
+                      <h3 className="font-mono font-bold text-white text-lg leading-tight group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-neon-magenta group-hover:to-neon-cyan group-hover:bg-clip-text transition-all duration-300">
                         {game.name}
                       </h3>
                       
+                      {/* Category & Rating */}
                       <div className="flex items-center justify-between">
-                        <span className="text-xs font-retro uppercase tracking-wider text-wmx-gray-500">{game.category}</span>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-3 w-3 text-retro-gold fill-current" />
-                          <span className="text-xs font-bold text-wmx-gray-700">{game.rating}</span>
+                        <div className="px-2 py-1 bg-gradient-to-r from-neon-magenta/20 to-neon-cyan/20 border border-neon-magenta/30 rounded-md">
+                          <span className="text-xs font-mono uppercase tracking-wider text-neon-cyan font-bold">
+                            {game.category}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 bg-gradient-to-r from-retro-gold/20 to-retro-orange/20 px-2 py-1 rounded-md">
+                          <Star className="h-3 w-3 text-retro-gold fill-current animate-pulse" />
+                          <span className="text-xs font-mono font-bold text-retro-gold">{game.rating}</span>
                         </div>
                       </div>
 
-                      <div className="pt-2 border-t border-wmx-gray-200">
-                        <p className="text-sm font-semibold bg-gradient-to-r from-neon-magenta to-neon-cyan bg-clip-text text-transparent">
-                          {game.price}
+                      {/* Price */}
+                      <div className="pt-3 border-t border-neon-magenta/30">
+                        <p className="text-sm font-mono font-bold bg-gradient-to-r from-neon-magenta to-neon-cyan bg-clip-text text-transparent">
+                          &gt; {game.price}
                         </p>
                       </div>
                       
-                      {/* Quick Action */}
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <button className="w-full py-2 px-4 bg-gradient-to-r from-neon-magenta to-neon-cyan text-white font-heading text-xs uppercase tracking-wider rounded-lg hover:shadow-neon transition-all">
-                          Top Up Now
+                      {/* Action Button */}
+                      <div className="opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                        <button className="w-full py-2 px-4 bg-gradient-to-r from-neon-magenta via-neon-cyan to-neon-pink text-white font-mono text-xs uppercase tracking-wider rounded-lg border border-neon-magenta/50 hover:shadow-[0_0_20px_rgba(255,0,255,0.5)] hover:border-neon-cyan transition-all duration-300 relative overflow-hidden group/btn">
+                          <span className="relative z-10">[ TOP UP NOW ]</span>
+                          <div className="absolute inset-0 bg-gradient-to-r from-neon-cyan/20 to-neon-magenta/20 translate-x-[-100%] group-hover/btn:translate-x-0 transition-transform duration-300" />
                         </button>
                       </div>
                     </div>
-                  </GlassCard>
+                  </div>
                 </div>
               </Link>
             ))}

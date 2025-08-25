@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import { Inter, Poppins } from "next/font/google"
 import { Providers } from '@/components/providers/session-provider'
+import { SessionStatus } from '@/components/debug/session-status'
 import "./globals.css"
 
 const inter = Inter({
@@ -29,6 +30,7 @@ export default function RootLayout({
       <body className={`${inter.variable} ${poppins.variable} antialiased`}>
         <Providers>
           {children}
+          {process.env.NODE_ENV === 'development' && <SessionStatus />}
         </Providers>
       </body>
     </html>
