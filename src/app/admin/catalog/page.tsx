@@ -358,20 +358,21 @@ export default function AdminCatalogPage() {
         </p>
         <div className="neon-divider mb-6" />
         
-        <div className="flex justify-end gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
           <Button
             onClick={() => setShowAddModal(true)}
-            className="bg-neon-green hover:bg-neon-green/80 text-black font-semibold"
+            className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold px-6 py-2 shadow-lg"
+            size="lg"
           >
             <Package className="w-4 h-4 mr-2" />
-            Tambah Produk
+            Tambah Produk Manual
           </Button>
           
           <Button
             onClick={() => handleSync('sync-stock')}
             disabled={syncing}
             variant="outline"
-            className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan/10"
+            className="border-cyan-400 text-cyan-400 hover:bg-cyan-400/10"
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
             Sync Stock
@@ -380,7 +381,7 @@ export default function AdminCatalogPage() {
           <Button
             onClick={() => handleSync('full-sync')}
             disabled={syncing}
-            className="bg-neon-magenta hover:bg-neon-magenta/80 text-black font-semibold"
+            className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-semibold"
           >
             <Download className="w-4 h-4 mr-2" />
             Full Sync

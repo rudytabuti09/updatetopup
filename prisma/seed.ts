@@ -113,6 +113,58 @@ async function main() {
     },
   })
 
+  const codMobile = await prisma.service.upsert({
+    where: { provider: 'cod-mobile' },
+    update: {},
+    create: {
+      categoryId: gameCategory.id,
+      name: 'Call of Duty Mobile',
+      slug: 'cod-mobile',
+      description: 'Top up CP Call of Duty Mobile',
+      provider: 'cod-mobile',
+      sortOrder: 4,
+    },
+  })
+
+  const genshinImpact = await prisma.service.upsert({
+    where: { provider: 'genshin-impact' },
+    update: {},
+    create: {
+      categoryId: gameCategory.id,
+      name: 'Genshin Impact',
+      slug: 'genshin-impact',
+      description: 'Top up Genesis Crystal Genshin Impact',
+      provider: 'genshin-impact',
+      sortOrder: 5,
+    },
+  })
+
+  const valorant = await prisma.service.upsert({
+    where: { provider: 'valorant' },
+    update: {},
+    create: {
+      categoryId: gameCategory.id,
+      name: 'Valorant',
+      slug: 'valorant',
+      description: 'Top up Valorant Points',
+      provider: 'valorant',
+      sortOrder: 6,
+    },
+  })
+
+  const honkaiStarRail = await prisma.service.upsert({
+    where: { provider: 'honkai-star-rail' },
+    update: {},
+    create: {
+      categoryId: gameCategory.id,
+      name: 'Honkai Star Rail',
+      slug: 'honkai-star-rail',
+      description: 'Top up Oneiric Shard Honkai Star Rail',
+      provider: 'honkai-star-rail',
+      sortOrder: 7,
+    },
+  })
+
   // Create services - Pulsa
   const telkomsel = await prisma.service.upsert({
     where: { provider: 'telkomsel' },

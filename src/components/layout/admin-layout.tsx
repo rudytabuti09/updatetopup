@@ -16,7 +16,8 @@ import {
   Bell,
   Shield,
   RefreshCw,
-  Database
+  Database,
+  FolderOpen
 } from 'lucide-react'
 import { Logo } from '@/components/ui/logo'
 import { GlassCard } from '@/components/ui/glass-card'
@@ -30,6 +31,7 @@ const navigation = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
   { name: 'Pengguna', href: '/admin/users', icon: Users },
   { name: 'Pesanan', href: '/admin/orders', icon: ShoppingBag },
+  { name: 'Kategori & Service', href: '/admin/categories', icon: FolderOpen },
   { name: 'Produk & Layanan', href: '/admin/services', icon: Package },
   { name: 'Catalog VIP-Reseller', href: '/admin/catalog', icon: RefreshCw },
   { name: 'Stock Management', href: '/admin/stock', icon: Database },

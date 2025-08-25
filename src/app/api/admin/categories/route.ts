@@ -28,12 +28,10 @@ export async function GET(request: NextRequest) {
 
     const categories = await prisma.category.findMany({
       include: {
-        ...(includeServices && {
-          services: {
-            where: { isActive: true },
-            orderBy: { name: 'asc' }
-          }
-        }),
+        services: {
+          where: { isActive: true },
+          orderBy: { sortOrder: 'asc' }
+        },
         _count: {
           select: {
             services: { where: { isActive: true } }
