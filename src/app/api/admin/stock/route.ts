@@ -99,41 +99,26 @@ export async function GET(request: NextRequest) {
     const productId = searchParams.get('productId')
     const action = searchParams.get('action')
 
-    if (action === 'history' && productId) {
-      // Get stock history for a product
+    if (action === 'history') {
+      // Get stock history (with optional productId filter)
+      const whereClause = productId ? { productId } : {}
       const history = await prisma.stockHistory.findMany({
-        where: { productId },
+        where: whereClause,
+        include: {
+          product: {
+            select: {
+              name: true,
+              sku: true
+            }
+          }
+        },
         orderBy: { createdAt: 'desc' },
-        take: 50
+        take: 100
       })
 
       return NextResponse.json({
         success: true,
         data: history
-      })
-    }
-
-    if (action === 'products') {
-      // Get all products with stock information
-      const products = await prisma.product.findMany({
-        include: {
-          service: {
-            select: {
-              name: true,
-              category: {
-                select: {
-                  name: true
-                }
-              }
-            }
-          }
-        },
-        orderBy: { name: 'asc' }
-      })
-
-      return NextResponse.json({
-        success: true,
-        data: products
       })
     }
 
@@ -145,10 +130,27 @@ export async function GET(request: NextRequest) {
       })
     }
 
-    return NextResponse.json(
-      { success: false, message: 'Invalid action or missing parameters' },
-      { status: 400 }
-    )
+    // Default: Get all products with stock information
+    const products = await prisma.product.findMany({
+      include: {
+        service: {
+          select: {
+            name: true,
+            category: {
+              select: {
+                name: true
+              }
+            }
+          }
+        }
+      },
+      orderBy: [{ name: 'asc' }]
+    })
+
+    return NextResponse.json({
+      success: true,
+      data: products
+    })
   } catch (error) {
     console.error('Stock API error:', error)
     return NextResponse.json(

@@ -224,7 +224,10 @@ class VipResellerAPI {
     return CryptoJS.MD5(this.apiId + this.apiKey).toString()
   }
 
-  private async makeRequest<T = unknown>(endpoint: VipEndpoint, data: Record<string, unknown> = {}): Promise<T> {
+  private async makeRequest<T = unknown>(endpoint: VipEndpoint, data: Record<string, unknown> = {}, retryCount = 0): Promise<T> {
+    const maxRetries = 3
+    const baseDelay = 2000 // 2 seconds
+    
     try {
       const signature = this.getSignature()
       const requestData = {
@@ -242,20 +245,57 @@ class VipResellerAPI {
       const response = await axios.post(`${this.baseURL}/${endpoint}`, formData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'application/json, text/plain, */*',
+          'Accept-Language': 'en-US,en;q=0.9',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'Connection': 'keep-alive',
+          'Referer': this.baseURL,
+          'Origin': this.baseURL.replace('/api', ''),
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache'
         },
-        timeout: 30000
+        timeout: 30000,
+        maxRedirects: 5,
+        validateStatus: (status) => status < 500 // Accept redirects and client errors
       })
+
+      // Check if response contains Cloudflare challenge page
+      if (typeof response.data === 'string' && response.data.includes('Just a moment...')) {
+        throw new Error('Cloudflare challenge detected - API temporarily blocked')
+      }
 
       return response.data
     } catch (error) {
       if (axios.isAxiosError(error)) {
+        const is403 = error.response?.status === 403
+        const isCloudflareBlock = error.response?.data && 
+          typeof error.response.data === 'string' && 
+          (error.response.data.includes('Just a moment...') || error.response.data.includes('Cloudflare'))
+        
+        // If it's a Cloudflare block and we haven't exhausted retries, try again
+        if ((is403 || isCloudflareBlock) && retryCount < maxRetries) {
+          const delay = baseDelay * Math.pow(2, retryCount) + Math.random() * 1000 // Exponential backoff with jitter
+          console.warn(`VIP-Reseller API blocked by Cloudflare (${endpoint}), retrying in ${delay}ms... (attempt ${retryCount + 1}/${maxRetries})`)
+          
+          await new Promise(resolve => setTimeout(resolve, delay))
+          return this.makeRequest(endpoint, data, retryCount + 1)
+        }
+        
         console.error(`VIP-Reseller API Error (${endpoint}):`, {
           status: error.response?.status,
           statusText: error.response?.statusText,
-          data: error.response?.data,
+          data: typeof error.response?.data === 'string' && error.response.data.length > 500 
+            ? error.response.data.substring(0, 500) + '...' 
+            : error.response?.data,
           url: error.config?.url,
-          method: error.config?.method
+          method: error.config?.method,
+          retryCount
         })
+        
+        if (isCloudflareBlock) {
+          throw new Error('VIP-Reseller API is currently protected by Cloudflare. This is typically temporary - please try again in a few minutes.')
+        }
       } else {
         console.error(`VIP-Reseller API Error (${endpoint}):`, error)
       }

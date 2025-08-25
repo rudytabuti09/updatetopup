@@ -5,13 +5,45 @@ export async function GET() {
   try {
     console.log('Testing VIP-Reseller connection...')
     
-    // Test basic connectivity
-    const services = await vipResellerAPI.getServices()
+    // Try profile first (usually less restricted)
+    let connectionTest: Record<string, unknown> | null = null
+    let testMethod = ''
+    
+    try {
+      const profile = await vipResellerAPI.getProfile()
+      connectionTest = {
+        profile: {
+          username: profile.username,
+          name: profile.name,
+          balance: profile.balance,
+          level: profile.level,
+          status: profile.status
+        }
+      }
+      testMethod = 'profile'
+    } catch (profileError) {
+      console.warn('Profile endpoint failed, trying services...')
+      
+      // Fallback to services
+      const services = await vipResellerAPI.getServices()
+      connectionTest = {
+        services: {
+          count: services.length,
+          samples: services.slice(0, 3).map(s => ({
+            name: s.name,
+            category: s.category,
+            status: s.status
+          }))
+        }
+      }
+      testMethod = 'services'
+    }
     
     // Test additional endpoints
     const tests: Record<string, unknown> = {
-      services: services.length,
+      ...connectionTest,
       connection: 'success',
+      testMethod,
       apiUrl: process.env.VIP_RESELLER_API_URL,
       hasApiKey: !!process.env.VIP_RESELLER_API_KEY,
       hasApiId: !!process.env.VIP_RESELLER_API_ID,
@@ -23,30 +55,45 @@ export async function GET() {
       const stockResponse = await vipResellerAPI.getStock()
       tests.stockEndpoint = stockResponse.result ? 'available' : 'limited'
     } catch (error) {
-      console.error('Stock endpoint test error:', error)
-      tests.stockEndpoint = 'not available'
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+      const isCloudflareBlock = errorMsg.includes('Cloudflare')
+      tests.stockEndpoint = isCloudflareBlock ? 'blocked by cloudflare' : 'not available'
     }
     
     return NextResponse.json({
       success: true,
-      message: `VIP-Reseller connection successful! Found ${services.length} services.`,
-      data: tests,
-      sampleServices: services.slice(0, 3) // Show first 3 services
+      message: `VIP-Reseller connection successful via ${testMethod}!`,
+      data: tests
     })
   } catch (error) {
     console.error('VIP-Reseller connection test failed:', error)
     
+    const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+    const isCloudflareBlock = errorMsg.includes('Cloudflare')
+    
     return NextResponse.json({
       success: false,
-      message: 'VIP-Reseller connection failed',
-      error: error instanceof Error ? error.message : 'Unknown error',
+      message: isCloudflareBlock 
+        ? 'VIP-Reseller API is currently protected by Cloudflare'
+        : 'VIP-Reseller connection failed',
+      error: errorMsg,
+      isCloudflareBlock,
+      recommendations: isCloudflareBlock ? [
+        'Wait a few minutes and try again',
+        'Cloudflare protection is usually temporary',
+        'The API may be experiencing high traffic or DDoS protection is active'
+      ] : [
+        'Check VIP-Reseller API credentials',
+        'Verify API endpoint URL',
+        'Check network connectivity'
+      ],
       debug: {
         apiUrl: process.env.VIP_RESELLER_API_URL || 'not set',
         hasApiKey: !!process.env.VIP_RESELLER_API_KEY,
         hasApiId: !!process.env.VIP_RESELLER_API_ID,
         timestamp: new Date().toISOString()
       }
-    }, { status: 500 })
+    }, { status: isCloudflareBlock ? 503 : 500 })
   }
 }
 

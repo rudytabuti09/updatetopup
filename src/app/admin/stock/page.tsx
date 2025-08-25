@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import { useSession } from 'next-auth/react'
 import { 
   Database, 
   AlertTriangle, 
@@ -13,6 +14,7 @@ import {
   Search,
   Filter
 } from 'lucide-react'
+import { AdminLayout } from '@/components/layout/admin-layout'
 import { GlassCard } from '@/components/ui/glass-card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -38,18 +40,23 @@ interface Product {
 
 interface StockHistory {
   id: string
-  type: 'MANUAL_ADJUSTMENT' | 'ORDER_REDUCTION' | 'SYNC_UPDATE' | 'RESTORE'
+  type: 'MANUAL_ADJUSTMENT' | 'ORDER_REDUCTION' | 'SYNC_UPDATE' | 'RESTOCK' | 'CORRECTION'
   quantity: number
-  previousStock: number | null
-  newStock: number
-  reason: string
+  oldStock: number | null
+  newStock: number | null
+  reason: string | null
   createdAt: string
+  product?: {
+    name: string
+    sku: string
+  }
   user?: {
     name: string
   }
 }
 
 export default function AdminStockPage() {
+  const { data: session } = useSession()
   const { toast } = useToast()
   const [products, setProducts] = React.useState<Product[]>([])
   const [filteredProducts, setFilteredProducts] = React.useState<Product[]>([])
@@ -133,7 +140,7 @@ export default function AdminStockPage() {
 
   const loadStockHistory = async () => {
     try {
-      const response = await fetch('/api/admin/stock/history?limit=50')
+      const response = await fetch('/api/admin/stock?action=history')
       const result = await response.json()
       
       if (result.success) {
@@ -254,35 +261,58 @@ export default function AdminStockPage() {
     unlimited: products.filter(p => p.stockType === 'UNLIMITED').length
   }
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-neon-magenta to-neon-cyan bg-clip-text text-transparent">
-            Stock Management
-          </h1>
-          <p className="text-white/70 mt-1">
-            Monitor dan kelola stock produk VIP-Reseller
-          </p>
+  // Check admin access
+  if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
+    return (
+      <AdminLayout>
+        <div className="flex items-center justify-center py-20">
+          <GlassCard className="p-8">
+            <p className="text-white/70">Access denied. Admin privileges required.</p>
+          </GlassCard>
         </div>
-        <Button
-          onClick={syncStock}
-          disabled={syncing}
-          className="bg-gradient-to-r from-neon-magenta to-neon-cyan hover:opacity-90"
-        >
-          {syncing ? (
-            <>
-              <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-              Syncing...
-            </>
-          ) : (
-            <>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Sync Stock
-            </>
-          )}
-        </Button>
+      </AdminLayout>
+    )
+  }
+
+  return (
+    <AdminLayout>
+      {/* Header with retro styling */}
+      <div className="mb-8 relative">
+        <div className="flex items-center space-x-4 mb-4">
+          <h1 className="text-4xl font-heading font-bold text-transparent bg-gradient-to-r from-neon-cyan via-neon-magenta to-neon-purple bg-clip-text animate-pulse">
+            STOCK MANAGEMENT
+          </h1>
+          <div className="flex space-x-1">
+            <div className="w-2 h-2 bg-neon-green rounded-full animate-ping" />
+            <div className="w-2 h-2 bg-neon-cyan rounded-full animate-ping" style={{animationDelay: '0.2s'}} />
+            <div className="w-2 h-2 bg-neon-magenta rounded-full animate-ping" style={{animationDelay: '0.4s'}} />
+          </div>
+        </div>
+        <p className="text-white/70 font-mono text-sm tracking-wide mb-4">
+          {">"} Monitor dan kelola stock produk VIP-Reseller
+        </p>
+        <div className="neon-divider mb-6" />
+        
+        <div className="flex justify-end">
+          <Button
+            onClick={syncStock}
+            disabled={syncing}
+            variant="outline"
+            className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan/10"
+          >
+            {syncing ? (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                Syncing...
+              </>
+            ) : (
+              <>
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Sync Stock
+              </>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -448,7 +478,7 @@ export default function AdminStockPage() {
           onClose={() => setShowHistoryModal(false)}
         />
       )}
-    </div>
+    </AdminLayout>
   )
 }
 
@@ -599,10 +629,15 @@ function StockHistoryModal({ history, onClose }: StockHistoryModalProps) {
                           {entry.quantity > 0 ? '+' : ''}{entry.quantity}
                         </Badge>
                       </div>
-                      <p className="text-white/70 text-sm">{entry.reason}</p>
+                      <p className="text-white/70 text-sm">{entry.reason || 'No reason provided'}</p>
                       <div className="text-white/50 text-xs">
-                        Stock: {entry.previousStock || 0} → {entry.newStock}
+                        Stock: {entry.oldStock || 0} → {entry.newStock || 0}
                       </div>
+                      {entry.product && (
+                        <div className="text-white/40 text-xs">
+                          Product: {entry.product.name} ({entry.product.sku})
+                        </div>
+                      )}
                       {entry.user && (
                         <div className="text-white/40 text-xs">
                           by {entry.user.name}

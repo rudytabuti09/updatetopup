@@ -22,15 +22,22 @@ export class VipSyncService {
     try {
       let servicesAdded = 0
       let servicesUpdated = 0
+      const errors: string[] = []
 
       // Sync Game Feature services
-      const gameServices = await vipResellerAPI.getServices()
-      const { added: gameAdded, updated: gameUpdated } = await this.syncServicesFromList(
-        gameServices, 
-        'GAME_FEATURE'
-      )
-      servicesAdded += gameAdded
-      servicesUpdated += gameUpdated
+      try {
+        const gameServices = await vipResellerAPI.getServices()
+        const { added: gameAdded, updated: gameUpdated } = await this.syncServicesFromList(
+          gameServices, 
+          'GAME_FEATURE'
+        )
+        servicesAdded += gameAdded
+        servicesUpdated += gameUpdated
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+        console.warn('Failed to sync game feature services:', errorMsg)
+        errors.push(`Game services: ${errorMsg}`)
+      }
 
       // Sync Prepaid services
       try {
@@ -42,7 +49,9 @@ export class VipSyncService {
         servicesAdded += prepaidAdded
         servicesUpdated += prepaidUpdated
       } catch (error) {
-        console.warn('Failed to sync prepaid services:', error)
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+        console.warn('Failed to sync prepaid services:', errorMsg)
+        errors.push(`Prepaid services: ${errorMsg}`)
       }
 
       // Sync Social Media services
@@ -55,19 +64,36 @@ export class VipSyncService {
         servicesAdded += socialAdded
         servicesUpdated += socialUpdated
       } catch (error) {
-        console.warn('Failed to sync social media services:', error)
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+        console.warn('Failed to sync social media services:', errorMsg)
+        errors.push(`Social media services: ${errorMsg}`)
       }
+
+      // If all sync attempts failed, consider it a failure
+      if (errors.length === 3) {
+        return {
+          success: false,
+          message: 'All service sync attempts failed - VIP-Reseller API may be temporarily unavailable',
+          error: errors.join('; ')
+        }
+      }
+
+      // If some succeeded, consider it a partial success
+      const message = errors.length > 0
+        ? `Services sync completed with warnings: ${servicesAdded} added, ${servicesUpdated} updated. Issues: ${errors.join('; ')}`
+        : `Services sync completed: ${servicesAdded} added, ${servicesUpdated} updated`
 
       return {
         success: true,
-        message: `Services sync completed: ${servicesAdded} added, ${servicesUpdated} updated`,
+        message,
         data: {
           servicesAdded,
           servicesUpdated,
           productsAdded: 0,
           productsUpdated: 0,
           stockUpdated: 0
-        }
+        },
+        error: errors.length > 0 ? errors.join('; ') : undefined
       }
     } catch (error) {
       console.error('Services sync error:', error)
