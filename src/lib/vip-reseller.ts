@@ -226,13 +226,20 @@ class VipResellerAPI {
 
   private async makeRequest<T = unknown>(endpoint: VipEndpoint, data: Record<string, unknown> = {}): Promise<T> {
     try {
+      const signature = this.getSignature()
       const requestData = {
         key: this.apiKey,
-        sign: this.getSignature(),
+        sign: signature,
         ...data
       }
 
-      const response = await axios.post(`${this.baseURL}/${endpoint}`, requestData, {
+      // Convert to URL encoded form data
+      const formData = new URLSearchParams()
+      Object.entries(requestData).forEach(([key, value]) => {
+        formData.append(key, String(value))
+      })
+
+      const response = await axios.post(`${this.baseURL}/${endpoint}`, formData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
@@ -241,7 +248,17 @@ class VipResellerAPI {
 
       return response.data
     } catch (error) {
-      console.error(`VIP-Reseller API Error (${endpoint}):`, error)
+      if (axios.isAxiosError(error)) {
+        console.error(`VIP-Reseller API Error (${endpoint}):`, {
+          status: error.response?.status,
+          statusText: error.response?.statusText,
+          data: error.response?.data,
+          url: error.config?.url,
+          method: error.config?.method
+        })
+      } else {
+        console.error(`VIP-Reseller API Error (${endpoint}):`, error)
+      }
       throw new Error(`API request failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }

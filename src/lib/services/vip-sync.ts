@@ -230,7 +230,7 @@ export class VipSyncService {
       if (!stockResponse.result) {
         return {
           success: false,
-          message: 'Failed to get stock information from VIP-Reseller',
+          message: 'Stock endpoint returned error - this feature may not be available for your account',
           error: stockResponse.message
         }
       }
@@ -299,7 +299,26 @@ export class VipSyncService {
     try {
       const servicesResult = await this.syncServices()
       const productsResult = await this.syncProducts()
-      const stockResult = await this.syncStock()
+      
+      // Try stock sync but don't fail the entire sync if it fails
+      let stockResult: SyncResult
+      try {
+        stockResult = await this.syncStock()
+      } catch (error) {
+        console.warn('Stock sync failed, continuing without stock sync:', error)
+        stockResult = {
+          success: false,
+          message: 'Stock sync failed - feature may not be available for your API account',
+          error: error instanceof Error ? error.message : 'Unknown error',
+          data: {
+            servicesAdded: 0,
+            servicesUpdated: 0,
+            productsAdded: 0,
+            productsUpdated: 0,
+            stockUpdated: 0
+          }
+        }
+      }
 
       const totalData = {
         servicesAdded: (servicesResult.data?.servicesAdded || 0),
@@ -309,20 +328,25 @@ export class VipSyncService {
         stockUpdated: (stockResult.data?.stockUpdated || 0)
       }
 
-      const allSuccess = servicesResult.success && productsResult.success && stockResult.success
+      // Consider sync successful if services and products sync worked (stock is optional)
+      const coreSuccess = servicesResult.success && productsResult.success
+      const allSuccess = coreSuccess && stockResult.success
+      
       const errors = [
         servicesResult.error,
         productsResult.error,
-        stockResult.error
+        !stockResult.success ? `Stock: ${stockResult.error || 'Failed'}` : null
       ].filter(Boolean)
 
       return {
-        success: allSuccess,
+        success: coreSuccess, // Success if core components (services & products) work
         message: allSuccess 
           ? `Full sync completed successfully: ${totalData.servicesAdded + totalData.productsAdded} items added, ${totalData.servicesUpdated + totalData.productsUpdated + totalData.stockUpdated} updated`
-          : `Sync completed with errors: ${errors.join(', ')}`,
+          : coreSuccess
+          ? `Sync completed with warnings: ${totalData.servicesAdded + totalData.productsAdded} items added, ${totalData.servicesUpdated + totalData.productsUpdated} updated. ${errors.join(', ')}`
+          : `Sync failed: ${errors.join(', ')}`,
         data: totalData,
-        error: errors.length > 0 ? errors.join('; ') : undefined
+        error: !coreSuccess ? errors.join('; ') : undefined
       }
     } catch (error) {
       console.error('Full sync error:', error)
