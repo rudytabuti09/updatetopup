@@ -6,6 +6,12 @@ module.exports = {
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
+  // Performance optimizations
+  corePlugins: {
+    // Disable unused features for better performance
+    preflight: true,
+    container: true,
+  },
   theme: {
     container: {
       center: true,
@@ -116,10 +122,12 @@ module.exports = {
         "neon-pulse": {
           "0%, 100%": { 
             opacity: "1",
+            transform: "translateZ(0)",
             boxShadow: "0 0 20px rgba(255, 0, 255, 0.5), 0 0 40px rgba(0, 255, 255, 0.3)"
           },
           "50%": { 
             opacity: "0.8",
+            transform: "translateZ(0)",
             boxShadow: "0 0 30px rgba(255, 0, 255, 0.7), 0 0 60px rgba(0, 255, 255, 0.5)"
           },
         },
@@ -128,8 +136,8 @@ module.exports = {
           "100%": { transform: "translateY(100%)" },
         },
         "float": {
-          "0%, 100%": { transform: "translateY(0px)" },
-          "50%": { transform: "translateY(-10px)" },
+          "0%, 100%": { transform: "translate3d(0, 0, 0)" },
+          "50%": { transform: "translate3d(0, -10px, 0)" },
         },
         "grid-scroll": {
           "0%": { backgroundPosition: "0 0" },
@@ -137,15 +145,18 @@ module.exports = {
         },
       },
       animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
-        "fade-in": "fade-in 0.5s ease-out",
-        "slide-up": "slide-up 0.6s ease-out",
+        "accordion-down": "accordion-down 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+        "accordion-up": "accordion-up 0.2s cubic-bezier(0.4, 0, 0.2, 1)",
+        "fade-in": "fade-in 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+        "slide-up": "slide-up 0.6s cubic-bezier(0.4, 0, 0.2, 1)",
         "glow": "glow 2s ease-in-out infinite alternate",
         "float": "float 3s ease-in-out infinite",
         "neon-pulse": "neon-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
         "scan-line": "scan-line 8s linear infinite",
         "grid-scroll": "grid-scroll 10s linear infinite",
+        // Performance optimized animations
+        "fade-in-fast": "fade-in 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+        "slide-up-fast": "slide-up 0.4s cubic-bezier(0.4, 0, 0.2, 1)",
       },
       backgroundImage: {
         "gradient-neon": "linear-gradient(135deg, #FF00FF, #00FFFF)",

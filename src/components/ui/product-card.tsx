@@ -1,11 +1,12 @@
 'use client'
 
 import * as React from "react"
-import { Star, TrendingUp, ShoppingCart } from "lucide-react"
+import { Star, TrendingUp, ShoppingCart, Package } from "lucide-react"
 import { GlassCard } from "./glass-card"
 import { GradientButton } from "./gradient-button"
 import { StatusBadge } from "./status-badge"
 import { cn } from "@/lib/utils"
+import { usePrefersReducedMotion } from "@/lib/performance"
 
 interface ProductCardProps {
   id: string
@@ -25,7 +26,7 @@ interface ProductCardProps {
   className?: string
 }
 
-export function ProductCard({
+const ProductCardComponent = React.memo<ProductCardProps>(function ProductCard({
   id,
   name,
   description,
@@ -36,27 +37,29 @@ export function ProductCard({
   discount,
   provider,
   category,
-  image = "💎",
+  image,
   gradient = "from-blue-600 to-purple-600",
   isActive = true,
   onClick,
   className
-}: ProductCardProps) {
+}) {
+  const prefersReducedMotion = usePrefersReducedMotion()
   const discountPercentage = originalPrice && price < originalPrice 
     ? Math.round(((originalPrice - price) / originalPrice) * 100)
     : discount
 
-  const handleClick = () => {
+  const handleClick = React.useCallback(() => {
     if (isActive && onClick) {
       onClick(id)
     }
-  }
+  }, [isActive, onClick, id])
 
   return (
     <GlassCard 
       hover={isActive} 
       className={cn(
-        "p-0 overflow-hidden group transition-all duration-300",
+        "p-0 overflow-hidden group gpu-accelerated",
+        prefersReducedMotion ? "transition-none" : "transition-all duration-300",
         !isActive && "opacity-60 cursor-not-allowed",
         className
       )}
@@ -67,7 +70,13 @@ export function ProductCard({
         "relative p-4 bg-gradient-to-r text-center",
         gradient
       )}>
-        <div className="text-3xl mb-2">{image}</div>
+        <div className="mb-2 flex justify-center">
+          {image ? (
+            <div className="text-3xl">{image}</div>
+          ) : (
+            <Package className="h-8 w-8 text-white" />
+          )}
+        </div>
         <h3 className="font-bold text-white text-sm line-clamp-2">{name}</h3>
         {description && (
           <p className="text-white/80 text-xs mt-1 line-clamp-1">{description}</p>
@@ -137,4 +146,9 @@ export function ProductCard({
       </div>
     </GlassCard>
   )
-}
+})
+
+// Export with display name for better debugging
+ProductCardComponent.displayName = 'ProductCard'
+
+export { ProductCardComponent as ProductCard }

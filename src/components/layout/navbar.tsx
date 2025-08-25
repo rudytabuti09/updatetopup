@@ -5,11 +5,12 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { useSession, signOut } from "next-auth/react"
 import { Menu, X, Search, User, LogOut, Settings, ShoppingCart, Zap, Gamepad2 } from "lucide-react"
-import { Logo } from "@/components/ui/logo"
+import { WMXLogoPNGCompact } from "@/components/ui/wmx-logo-png"
 import { GradientButton } from "@/components/ui/gradient-button"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
+import { useScrollPosition, useThrottle, usePrefersReducedMotion } from "@/lib/performance"
 
 const navigation = [
   { name: "HOME", href: "/", icon: Gamepad2 },
@@ -23,9 +24,14 @@ export function Navbar() {
   const router = useRouter()
   const { data: session, status } = useSession()
   const [isMenuOpen, setIsMenuOpen] = React.useState(false)
-  const [isScrolled, setIsScrolled] = React.useState(false)
   const [showUserMenu, setShowUserMenu] = React.useState(false)
   const [isClient, setIsClient] = React.useState(false)
+  
+  // Performance optimized scroll handling
+  const scrollPosition = useScrollPosition()
+  const throttledScrollPosition = useThrottle(scrollPosition, 16) // 60fps
+  const isScrolled = throttledScrollPosition > 20
+  const prefersReducedMotion = usePrefersReducedMotion()
 
   // Fix hydration mismatch
   React.useEffect(() => {
@@ -49,14 +55,7 @@ export function Navbar() {
     }
   }, [status, session, isClient])
 
-  React.useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20)
-    }
-
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
+  // Removed scroll event listener - now using useScrollPosition hook for better performance
 
   // Close user menu when clicking outside
   React.useEffect(() => {
@@ -75,7 +74,8 @@ export function Navbar() {
 
   return (
     <header className={cn(
-      "fixed top-0 left-0 right-0 z-50 transition-all duration-500",
+      "fixed top-0 left-0 right-0 z-50 gpu-accelerated",
+      prefersReducedMotion ? "transition-none" : "transition-all duration-500 ease-out",
       isScrolled ? "bg-white/95 backdrop-blur-lg shadow-lg" : "bg-transparent"
     )}>
       <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neon-magenta to-transparent opacity-50" />
@@ -83,14 +83,20 @@ export function Navbar() {
         <div className="flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex-shrink-0 group">
-            <div className="flex items-center gap-2">
-              <div className="relative">
-                <Gamepad2 className="h-8 w-8 text-neon-magenta group-hover:text-neon-cyan transition-colors duration-300" />
-                <div className="absolute inset-0 bg-neon-magenta/20 blur-lg group-hover:bg-neon-cyan/20 transition-colors duration-300" />
+            <div className="flex items-center gap-3">
+              <WMXLogoPNGCompact 
+                className="group-hover:scale-110 transition-transform duration-300" 
+                width={48} 
+                height={48}
+              />
+              <div className="hidden sm:block">
+                <div className="font-heading font-black text-xl bg-gradient-to-r from-neon-magenta to-neon-cyan bg-clip-text text-transparent">
+                  WMX TOPUP
+                </div>
+                <div className="text-xs text-wmx-gray-600 font-medium tracking-wider uppercase">
+                  Services
+                </div>
               </div>
-              <span className="font-heading font-bold text-xl bg-gradient-to-r from-neon-magenta to-neon-cyan bg-clip-text text-transparent">
-                WMX
-              </span>
             </div>
           </Link>
 

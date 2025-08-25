@@ -2,16 +2,45 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { Gamepad2, Sparkles, Coins, Star, Zap, ChevronRight } from 'lucide-react'
+import { Gamepad2, Sparkles, Coins, Star, Zap, ChevronRight, Trophy, Flame, Target, Joystick } from 'lucide-react'
 import { GradientButton } from '@/components/ui/gradient-button'
+import { LogoImage } from '@/components/ui/logo-image'
 import { cn } from '@/lib/utils'
 
 // Popular game logos data
 const gameLogos = [
-  { id: 'mlbb', name: 'Mobile Legends', color: 'from-blue-500 to-purple-600', icon: '⚔️' },
-  { id: 'ff', name: 'Free Fire', color: 'from-orange-500 to-red-600', icon: '🔥' },
-  { id: 'pubg', name: 'PUBG Mobile', color: 'from-yellow-500 to-orange-600', icon: '🎯' },
-  { id: 'valorant', name: 'Valorant', color: 'from-red-500 to-pink-600', icon: '🎮' },
+  { 
+    id: 'mlbb', 
+    name: 'Mobile Legends', 
+    color: 'from-blue-500 to-purple-600', 
+    logoSrc: '/logos/games/mobile-legends.png',
+    fallbackIcon: Trophy,
+    fallbackColor: 'text-blue-500'
+  },
+  { 
+    id: 'ff', 
+    name: 'Free Fire', 
+    color: 'from-orange-500 to-red-600', 
+    logoSrc: '/logos/games/free-fire.png',
+    fallbackIcon: Flame,
+    fallbackColor: 'text-orange-500'
+  },
+  { 
+    id: 'pubg', 
+    name: 'PUBG Mobile', 
+    color: 'from-yellow-500 to-orange-600', 
+    logoSrc: '/logos/games/pubg-mobile.png',
+    fallbackIcon: Target,
+    fallbackColor: 'text-yellow-500'
+  },
+  { 
+    id: 'valorant', 
+    name: 'Valorant', 
+    color: 'from-red-500 to-pink-600', 
+    logoSrc: '/logos/games/valorant.png',
+    fallbackIcon: Joystick,
+    fallbackColor: 'text-red-500'
+  },
 ]
 
 export function HeroArcade() {
@@ -189,9 +218,15 @@ export function HeroArcade() {
                     )}>
                       <div className="w-full h-full bg-white rounded-xl flex items-center justify-center">
                         {/* Game Icon/Logo */}
-                        <div className="text-4xl md:text-5xl">
-                          {game.icon}
-                        </div>
+                        <LogoImage
+                          src={game.logoSrc}
+                          alt={`${game.name} Logo`}
+                          fallbackIcon={game.fallbackIcon}
+                          fallbackColor={game.fallbackColor}
+                          width={56}
+                          height={56}
+                          className="md:w-14 md:h-14"
+                        />
                       </div>
                     </div>
                     

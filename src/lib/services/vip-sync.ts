@@ -17,59 +17,45 @@ export interface SyncResult {
 
 export class VipSyncService {
   
-  // Sync all services from VIP-Reseller
+  // Sync services from all VIP-Reseller APIs
   async syncServices(): Promise<SyncResult> {
     try {
-      const vipServices = await vipResellerAPI.getServices()
       let servicesAdded = 0
       let servicesUpdated = 0
 
-      for (const vipService of vipServices) {
-        // Check if category exists, create if not
-        let category = await prisma.category.findUnique({
-          where: { slug: this.slugify(vipService.category) }
-        })
+      // Sync Game Feature services
+      const gameServices = await vipResellerAPI.getServices()
+      const { added: gameAdded, updated: gameUpdated } = await this.syncServicesFromList(
+        gameServices, 
+        'GAME_FEATURE'
+      )
+      servicesAdded += gameAdded
+      servicesUpdated += gameUpdated
 
-        if (!category) {
-          category = await prisma.category.create({
-            data: {
-              name: vipService.category,
-              slug: this.slugify(vipService.category),
-              description: `${vipService.category} services`
-            }
-          })
-        }
+      // Sync Prepaid services
+      try {
+        const prepaidServices = await vipResellerAPI.getPrepaidServices()
+        const { added: prepaidAdded, updated: prepaidUpdated } = await this.syncServicesFromList(
+          prepaidServices, 
+          'PREPAID'
+        )
+        servicesAdded += prepaidAdded
+        servicesUpdated += prepaidUpdated
+      } catch (error) {
+        console.warn('Failed to sync prepaid services:', error)
+      }
 
-        // Check if service exists
-        const existingService = await prisma.service.findUnique({
-          where: { provider: vipService.service }
-        })
-
-        if (existingService) {
-          // Update existing service
-          await prisma.service.update({
-            where: { id: existingService.id },
-            data: {
-              name: vipService.name,
-              isActive: vipService.status === 'active',
-              updatedAt: new Date()
-            }
-          })
-          servicesUpdated++
-        } else {
-          // Create new service
-          await prisma.service.create({
-            data: {
-              categoryId: category.id,
-              name: vipService.name,
-              slug: this.slugify(vipService.name),
-              provider: vipService.service,
-              isActive: vipService.status === 'active',
-              description: vipService.note || undefined
-            }
-          })
-          servicesAdded++
-        }
+      // Sync Social Media services
+      try {
+        const socialServices = await vipResellerAPI.getSocialMediaServices()
+        const { added: socialAdded, updated: socialUpdated } = await this.syncServicesFromList(
+          socialServices, 
+          'SOCIAL_MEDIA'
+        )
+        servicesAdded += socialAdded
+        servicesUpdated += socialUpdated
+      } catch (error) {
+        console.warn('Failed to sync social media services:', error)
       }
 
       return {
@@ -91,6 +77,67 @@ export class VipSyncService {
         error: error instanceof Error ? error.message : 'Unknown error'
       }
     }
+  }
+
+  // Helper method to sync services from a list
+  private async syncServicesFromList(
+    vipServices: VipService[], 
+    serviceType: 'GAME_FEATURE' | 'PREPAID' | 'SOCIAL_MEDIA'
+  ): Promise<{ added: number, updated: number }> {
+    let servicesAdded = 0
+    let servicesUpdated = 0
+
+    for (const vipService of vipServices) {
+      // Check if category exists, create if not
+      let category = await prisma.category.findUnique({
+        where: { slug: this.slugify(vipService.category) }
+      })
+
+      if (!category) {
+        category = await prisma.category.create({
+          data: {
+            name: vipService.category,
+            slug: this.slugify(vipService.category),
+            description: `${vipService.category} services`
+          }
+        })
+      }
+
+      // Check if service exists
+      const existingService = await prisma.service.findFirst({
+        where: { 
+          provider: vipService.service
+        }
+      })
+
+      if (existingService) {
+        // Update existing service
+        await prisma.service.update({
+          where: { id: existingService.id },
+          data: {
+            name: vipService.name,
+            isActive: vipService.status === 'active',
+            updatedAt: new Date()
+          }
+        })
+        servicesUpdated++
+      } else {
+        // Create new service
+        await prisma.service.create({
+          data: {
+            categoryId: category.id,
+            name: vipService.name,
+            slug: this.slugify(vipService.name),
+            provider: vipService.service, // VIP-Reseller service code goes in provider field
+            isActive: vipService.status === 'active',
+            description: vipService.note || undefined
+          }
+        })
+        servicesAdded++
+      }
+    }
+
+    return { added: servicesAdded, updated: servicesUpdated }
   }
 
   // Sync all products from VIP-Reseller

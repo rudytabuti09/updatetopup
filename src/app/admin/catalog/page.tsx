@@ -1,27 +1,34 @@
 'use client'
 
+import * as React from 'react'
 import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { Badge } from '@/components/ui/badge'
-import { useToast } from '@/hooks/use-toast'
-import { ProductModal } from '@/components/admin/product-modal'
 import { 
   RefreshCw, 
-  Download, 
-  Upload, 
-  AlertTriangle, 
+  Database, 
+  CheckCircle, 
+  XCircle, 
+  AlertTriangle,
   Package,
+  ShoppingCart,
   TrendingUp,
+  Clock,
+  Download,
+  Upload,
   Search,
-  Filter,
   Edit,
   Eye,
   BarChart3
 } from 'lucide-react'
+import { AdminLayout } from '@/components/layout/admin-layout'
+import { GlassCard } from '@/components/ui/glass-card'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useToast } from '@/hooks/use-toast'
+import { ProductModal } from '@/components/admin/product-modal'
 
 interface Product {
   id: string
@@ -78,17 +85,57 @@ export default function AdminCatalogPage() {
   const { data: session } = useSession()
   const { toast } = useToast()
   
+  // State for data
   const [products, setProducts] = useState<Product[]>([])
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([])
-  const [lowStockProducts, setLowStockProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(true)
-  const [syncing, setSyncing] = useState(false)
+  const [lowStockProducts, setLowStockProducts] = useState<Product[]>([])
+  
+  // State for filters
   const [searchTerm, setSearchTerm] = useState('')
-  const [stockFilter, setStockFilter] = useState<string>('all')
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [stockFilter, setStockFilter] = useState('all')
+  
+  // State for modals
   const [showAddModal, setShowAddModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  
+  // State for loading and sync
+  const [loading, setLoading] = useState(false)
+  const [syncing, setSyncing] = useState(false)
+  
+  const [syncResults, setSyncResults] = React.useState<{
+    services?: SyncResult
+    products?: SyncResult  
+    stock?: SyncResult
+    full?: SyncResult
+  }>({})
+  
+  const [stats, setStats] = React.useState({
+    totalServices: 0,
+    totalProducts: 0,
+    totalStock: 0,
+    lastSyncTime: null as string | null,
+    pendingSync: 0
+  })
+
+  const loadStats = async () => {
+    try {
+      const response = await fetch('/api/admin/catalog/stats')
+      const result = await response.json()
+      
+      if (result.success) {
+        setStats(result.data)
+      }
+    } catch (error) {
+      console.error('Failed to load catalog stats:', error)
+    }
+  }
+
+  // Load initial stats
+  React.useEffect(() => {
+    loadStats()
+  }, [])
 
   // Load data on component mount
   useEffect(() => {
@@ -282,31 +329,39 @@ export default function AdminCatalogPage() {
 
   if (!session?.user || (session.user.role !== 'ADMIN' && session.user.role !== 'SUPER_ADMIN')) {
     return (
-      <div className="container mx-auto py-8">
-        <Card>
-          <CardContent className="pt-6">
-            <p>Access denied. Admin privileges required.</p>
-          </CardContent>
-        </Card>
-      </div>
+      <AdminLayout>
+        <div className="flex items-center justify-center py-20">
+          <GlassCard className="p-8">
+            <p className="text-white/70">Access denied. Admin privileges required.</p>
+          </GlassCard>
+        </div>
+      </AdminLayout>
     )
   }
 
   return (
-    <div className="container mx-auto py-8 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-start">
-        <div>
-          <h1 className="text-3xl font-bold">Catalog Management</h1>
-          <p className="text-muted-foreground">
-            Manage products, stock, and sync with VIP-Reseller
-          </p>
+    <AdminLayout>
+      {/* Header with retro styling */}
+      <div className="mb-8 relative">
+        <div className="flex items-center space-x-4 mb-4">
+          <h1 className="text-4xl font-heading font-bold text-transparent bg-gradient-to-r from-neon-cyan via-neon-magenta to-neon-purple bg-clip-text animate-pulse">
+            CATALOG MANAGEMENT
+          </h1>
+          <div className="flex space-x-1">
+            <div className="w-2 h-2 bg-neon-green rounded-full animate-ping" />
+            <div className="w-2 h-2 bg-neon-cyan rounded-full animate-ping" style={{animationDelay: '0.2s'}} />
+            <div className="w-2 h-2 bg-neon-magenta rounded-full animate-ping" style={{animationDelay: '0.4s'}} />
+          </div>
         </div>
+        <p className="text-white/70 font-mono text-sm tracking-wide mb-4">
+          {">"} Kelola produk, stock, dan sinkronisasi dengan VIP-Reseller
+        </p>
+        <div className="neon-divider mb-6" />
         
-        <div className="flex gap-2">
+        <div className="flex justify-end gap-2">
           <Button
             onClick={() => setShowAddModal(true)}
-            className="bg-green-600 hover:bg-green-700"
+            className="bg-neon-green hover:bg-neon-green/80 text-black font-semibold"
           >
             <Package className="w-4 h-4 mr-2" />
             Tambah Produk
@@ -316,6 +371,7 @@ export default function AdminCatalogPage() {
             onClick={() => handleSync('sync-stock')}
             disabled={syncing}
             variant="outline"
+            className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan/10"
           >
             <RefreshCw className={`w-4 h-4 mr-2 ${syncing ? 'animate-spin' : ''}`} />
             Sync Stock
@@ -324,6 +380,7 @@ export default function AdminCatalogPage() {
           <Button
             onClick={() => handleSync('full-sync')}
             disabled={syncing}
+            className="bg-neon-magenta hover:bg-neon-magenta/80 text-black font-semibold"
           >
             <Download className="w-4 h-4 mr-2" />
             Full Sync
@@ -331,62 +388,89 @@ export default function AdminCatalogPage() {
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center">
-              <Package className="w-4 h-4 mr-2" />
-              Total Products
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{products.length}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center">
-              <AlertTriangle className="w-4 h-4 mr-2 text-destructive" />
-              Low Stock
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-destructive">{lowStockProducts.length}</div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center">
-              <TrendingUp className="w-4 h-4 mr-2 text-green-600" />
-              Active Products
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              {products.filter(p => p.isActive).length}
+      {/* Stats Grid with enhanced retro styling */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        
+        {/* Total Products */}
+        <GlassCard variant="cyber" hover glow>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-mono text-neon-cyan uppercase tracking-wider">PRODUCT_COUNT.DB</p>
+              <p className="text-3xl font-bold text-white font-mono">{products.length.toLocaleString()}</p>
+              <p className="text-xs text-neon-green flex items-center">
+                <span className="mr-1">▲</span> {products.filter(p => p.isActive).length} ACTIVE
+              </p>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium flex items-center">
-              <BarChart3 className="w-4 h-4 mr-2" />
-              Avg. Profit
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {products.length > 0 
-                ? `${Math.round(products.reduce((acc, p) => acc + p.profit, 0) / products.length)}%`
-                : '0%'
-              }
+            <div className="w-14 h-14 rounded-lg bg-gradient-to-r from-neon-cyan to-neon-blue flex items-center justify-center shadow-glow-cyan">
+              <Package className="h-7 w-7 text-black" />
             </div>
-          </CardContent>
-        </Card>
+          </div>
+          <div className="absolute bottom-2 right-2">
+            <div className="text-xs text-white/40 font-mono">[01]</div>
+          </div>
+        </GlassCard>
+
+        {/* Low Stock Alert */}
+        <GlassCard variant="cyber" hover className="border-orange-500/30">
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-mono text-orange-400 uppercase tracking-wider animate-pulse">LOW_STOCK.WAR</p>
+              <p className="text-3xl font-bold text-orange-300 font-mono animate-pulse">{lowStockProducts.length}</p>
+              <p className="text-xs text-orange-400 uppercase font-mono">NEEDS_RESTOCK</p>
+            </div>
+            <div className="w-14 h-14 rounded-lg bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center shadow-[0_0_20px_rgba(249,115,22,0.5)] animate-pulse">
+              <AlertTriangle className="h-7 w-7 text-black" />
+            </div>
+          </div>
+          <div className="absolute bottom-2 right-2">
+            <div className="text-xs text-orange-400/60 font-mono animate-pulse">[!]</div>
+          </div>
+        </GlassCard>
+
+        {/* Total Services */}
+        <GlassCard variant="cyber" hover>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-mono text-neon-magenta uppercase tracking-wider">SERVICES.SRV</p>
+              <p className="text-3xl font-bold text-white font-mono">{categories.length}</p>
+              <p className="text-xs text-neon-green flex items-center">
+                <span className="mr-1">▲</span> CATEGORIES
+              </p>
+            </div>
+            <div className="w-14 h-14 rounded-lg bg-gradient-to-r from-neon-green to-neon-cyan flex items-center justify-center shadow-glow-cyan animate-pulse">
+              <Database className="h-7 w-7 text-black" />
+            </div>
+          </div>
+          <div className="absolute bottom-2 right-2">
+            <div className="text-xs text-white/40 font-mono">[02]</div>
+          </div>
+        </GlassCard>
+
+        {/* Sync Status */}
+        <GlassCard variant="neon" hover>
+          <div className="flex items-center justify-between">
+            <div className="space-y-1">
+              <p className="text-xs font-mono text-retro-gold uppercase tracking-wider">SYNC_STATUS.LOG</p>
+              <p className="text-3xl font-bold text-white font-mono">
+                {syncing ? (
+                  <RefreshCw className="h-8 w-8 animate-spin text-neon-cyan" />
+                ) : (
+                  <CheckCircle className="h-8 w-8 text-neon-green" />
+                )}
+              </p>
+              <p className="text-xs text-retro-gold flex items-center">
+                {syncing ? 'SYNCING...' : 'READY'}
+              </p>
+            </div>
+            <div className="w-14 h-14 rounded-lg bg-gradient-to-r from-retro-gold to-retro-orange flex items-center justify-center shadow-glow-gold">
+              <RefreshCw className={`h-7 w-7 text-black ${syncing ? 'animate-spin' : ''}`} />
+            </div>
+          </div>
+          <div className="absolute bottom-2 right-2">
+            <div className="text-xs text-white/40 font-mono">[03]</div>
+          </div>
+        </GlassCard>
+
       </div>
 
       <Tabs defaultValue="products" className="space-y-4">
@@ -422,177 +506,206 @@ export default function AdminCatalogPage() {
             </select>
           </div>
 
-          {/* Products Table */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Products ({filteredProducts.length})</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {loading ? (
-                <div className="text-center py-8">Loading products...</div>
-              ) : (
-                <div className="space-y-4">
-                  {filteredProducts.map((product) => (
-                    <div key={product.id} className="border rounded-lg p-4 space-y-2">
-                      <div className="flex justify-between items-start">
-                        <div className="space-y-1">
-                          <h3 className="font-semibold">{product.name}</h3>
-                          <p className="text-sm text-muted-foreground">
-                            {product.service.category.name} • {product.service.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">SKU: {product.sku}</p>
-                        </div>
-                        
-                        <div className="flex items-center gap-2">
-                          <Badge variant={product.isActive ? 'default' : 'secondary'}>
-                            {product.isActive ? 'Active' : 'Inactive'}
-                          </Badge>
-                          
-                          <Badge variant={getStockBadgeVariant(product.stockType, product.stock, product.minStock)}>
-                            {getStockText(product)}
-                          </Badge>
-                        </div>
+          {/* Products List */}
+          <GlassCard variant="cyber">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-neon-cyan uppercase font-mono tracking-wider">PRODUCT_DB.SYS ({filteredProducts.length})</h2>
+              <div className="flex space-x-1">
+                <div className="w-2 h-2 bg-neon-green rounded-full animate-pulse" />
+                <div className="w-2 h-2 bg-neon-cyan rounded-full animate-pulse" style={{animationDelay: '0.5s'}} />
+              </div>
+            </div>
+            
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="loading-spinner mb-4" />
+                <p className="text-white/70 font-mono">Loading product database...</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {filteredProducts.map((product) => (
+                  <div key={product.id} className="border border-white/10 rounded-lg p-4 space-y-2 bg-white/5 hover:bg-white/10 transition-colors">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-1">
+                        <h3 className="font-semibold text-white">{product.name}</h3>
+                        <p className="text-sm text-white/60 font-mono">
+                          {product.service.category.name} • {product.service.name}
+                        </p>
+                        <p className="text-xs text-white/40 font-mono">SKU: {product.sku}</p>
                       </div>
                       
-                      <div className="flex justify-between items-center pt-2 border-t">
-                        <div className="flex gap-4 text-sm">
-                          <span>Price: Rp {product.price.toLocaleString()}</span>
-                          <span>Buy: Rp {product.buyPrice.toLocaleString()}</span>
-                          <span>Profit: Rp {product.profit.toLocaleString()}</span>
-                        </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-xs px-2 py-1 rounded font-mono uppercase ${
+                          product.isActive 
+                            ? 'bg-neon-green/20 text-neon-green border border-neon-green/30' 
+                            : 'bg-gray-500/20 text-gray-400 border border-gray-500/30'
+                        }`}>
+                          {product.isActive ? 'ACTIVE' : 'INACTIVE'}
+                        </span>
                         
-                        <div className="flex gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setSelectedProduct(product)
-                              setShowEditModal(true)
-                            }}
-                          >
-                            <Edit className="w-4 h-4 mr-1" />
-                            Edit
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedProduct(product)}
-                          >
-                            <Package className="w-4 h-4 mr-1" />
-                            Stock
-                          </Button>
-                        </div>
+                        <span className={`text-xs px-2 py-1 rounded font-mono uppercase ${
+                          product.stockType === 'OUT_OF_STOCK' 
+                            ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                            : product.stockType === 'UNLIMITED' 
+                            ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                            : product.minStock && product.stock !== null && product.stock <= product.minStock
+                            ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                            : 'bg-green-500/20 text-green-400 border border-green-500/30'
+                        }`}>
+                          {getStockText(product)}
+                        </span>
                       </div>
                     </div>
-                  ))}
-                  
-                  {filteredProducts.length === 0 && (
-                    <div className="text-center py-8 text-muted-foreground">
-                      No products found matching your criteria.
+                    
+                    <div className="flex justify-between items-center pt-2 border-t border-white/10">
+                      <div className="flex gap-4 text-sm font-mono text-white/70">
+                        <span>PRICE: Rp {product.price.toLocaleString()}</span>
+                        <span>BUY: Rp {product.buyPrice.toLocaleString()}</span>
+                        <span className="text-neon-green">PROFIT: Rp {product.profit.toLocaleString()}</span>
+                      </div>
+                      
+                      <div className="flex gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedProduct(product)
+                            setShowEditModal(true)
+                          }}
+                          className="border-neon-cyan text-neon-cyan hover:bg-neon-cyan/10 font-mono"
+                        >
+                          <Edit className="w-4 h-4 mr-1" />
+                          EDIT
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedProduct(product)}
+                          className="border-neon-green text-neon-green hover:bg-neon-green/10 font-mono"
+                        >
+                          <Package className="w-4 h-4 mr-1" />
+                          STOCK
+                        </Button>
+                      </div>
                     </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                  </div>
+                ))}
+                
+                {filteredProducts.length === 0 && (
+                  <div className="text-center py-8 text-white/60 font-mono">
+                    NO PRODUCTS FOUND IN DATABASE
+                  </div>
+                )}
+              </div>
+            )}
+          </GlassCard>
         </TabsContent>
 
         <TabsContent value="sync" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>VIP-Reseller Synchronization</CardTitle>
-              <p className="text-sm text-muted-foreground">
-                Sync services, products, and stock data with VIP-Reseller API
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Button
-                  onClick={() => handleSync('sync-services')}
-                  disabled={syncing}
-                  variant="outline"
-                  className="h-20 flex flex-col items-center justify-center"
-                >
-                  <Download className="w-6 h-6 mb-2" />
-                  Sync Services
-                  <span className="text-xs text-muted-foreground">Update service list</span>
-                </Button>
-                
-                <Button
-                  onClick={() => handleSync('sync-products')}
-                  disabled={syncing}
-                  variant="outline"
-                  className="h-20 flex flex-col items-center justify-center"
-                >
-                  <Package className="w-6 h-6 mb-2" />
-                  Sync Products
-                  <span className="text-xs text-muted-foreground">Update price list</span>
-                </Button>
-                
-                <Button
-                  onClick={() => handleSync('sync-stock')}
-                  disabled={syncing}
-                  variant="outline"
-                  className="h-20 flex flex-col items-center justify-center"
-                >
-                  <RefreshCw className="w-6 h-6 mb-2" />
-                  Sync Stock
-                  <span className="text-xs text-muted-foreground">Update stock levels</span>
-                </Button>
-                
-                <Button
-                  onClick={() => handleSync('full-sync')}
-                  disabled={syncing}
-                  className="h-20 flex flex-col items-center justify-center"
-                >
-                  <Upload className="w-6 h-6 mb-2" />
-                  Full Sync
-                  <span className="text-xs text-muted-foreground">Sync everything</span>
-                </Button>
+          <GlassCard variant="cyber">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-neon-magenta uppercase font-mono tracking-wider">VIP_RESELLER.SYNC</h2>
+              <div className="flex space-x-1">
+                <div className="w-2 h-2 bg-neon-magenta rounded-full animate-pulse" />
+                <div className="w-2 h-2 bg-neon-pink rounded-full animate-pulse" style={{animationDelay: '0.3s'}} />
               </div>
+            </div>
+            <p className="text-white/60 font-mono text-sm mb-6">
+              {">"} Sinkronisasi data dengan VIP-Reseller API
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Button
+                onClick={() => handleSync('sync-services')}
+                disabled={syncing}
+                variant="outline"
+                className="h-20 flex flex-col items-center justify-center border-neon-cyan text-neon-cyan hover:bg-neon-cyan/10 font-mono"
+              >
+                <Download className="w-6 h-6 mb-2" />
+                SYNC SERVICES
+                <span className="text-xs text-white/60">Update service list</span>
+              </Button>
               
-              {syncing && (
-                <div className="bg-muted p-4 rounded-lg">
-                  <div className="flex items-center">
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                    <span>Synchronizing with VIP-Reseller...</span>
-                  </div>
+              <Button
+                onClick={() => handleSync('sync-products')}
+                disabled={syncing}
+                variant="outline"
+                className="h-20 flex flex-col items-center justify-center border-neon-green text-neon-green hover:bg-neon-green/10 font-mono"
+              >
+                <Package className="w-6 h-6 mb-2" />
+                SYNC PRODUCTS
+                <span className="text-xs text-white/60">Update price list</span>
+              </Button>
+              
+              <Button
+                onClick={() => handleSync('sync-stock')}
+                disabled={syncing}
+                variant="outline"
+                className="h-20 flex flex-col items-center justify-center border-neon-magenta text-neon-magenta hover:bg-neon-magenta/10 font-mono"
+              >
+                <RefreshCw className="w-6 h-6 mb-2" />
+                SYNC STOCK
+                <span className="text-xs text-white/60">Update stock levels</span>
+              </Button>
+              
+              <Button
+                onClick={() => handleSync('full-sync')}
+                disabled={syncing}
+                className="h-20 flex flex-col items-center justify-center bg-retro-gold hover:bg-retro-gold/80 text-black font-mono font-bold"
+              >
+                <Upload className="w-6 h-6 mb-2" />
+                FULL SYNC
+                <span className="text-xs text-black/80">Sync everything</span>
+              </Button>
+            </div>
+            
+            {syncing && (
+              <div className="bg-white/5 p-4 rounded-lg border border-neon-cyan/30 mt-4">
+                <div className="flex items-center text-neon-cyan font-mono">
+                  <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                  <span>SYNCHRONIZING WITH VIP-RESELLER...</span>
                 </div>
-              )}
-            </CardContent>
-          </Card>
+              </div>
+            )}
+          </GlassCard>
         </TabsContent>
 
         <TabsContent value="alerts" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <AlertTriangle className="w-5 h-5 mr-2 text-destructive" />
-                Low Stock Alerts ({lowStockProducts.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {lowStockProducts.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
-                  No low stock alerts. All products are well stocked!
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {lowStockProducts.map((product) => (
-                    <div key={product.id} className="flex justify-between items-center p-3 border rounded-lg bg-destructive/5">
-                      <div>
-                        <h4 className="font-medium">{product.name}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          Current: {product.stock} • Min: {product.minStock}
-                        </p>
-                      </div>
-                      <Badge variant="destructive">Low Stock</Badge>
+          <GlassCard variant="cyber" className="border-orange-500/30">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-orange-400 uppercase font-mono tracking-wider flex items-center">
+                <AlertTriangle className="w-5 h-5 mr-2 animate-pulse" />
+                STOCK_ALERTS.WAR ({lowStockProducts.length})
+              </h2>
+              <div className="flex space-x-1">
+                <div className="w-2 h-2 bg-orange-400 rounded-full animate-pulse" />
+                <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse" style={{animationDelay: '0.3s'}} />
+              </div>
+            </div>
+            
+            {lowStockProducts.length === 0 ? (
+              <div className="text-center py-8 text-neon-green font-mono">
+                <CheckCircle className="w-8 h-8 mx-auto mb-2" />
+                ALL PRODUCTS WELL STOCKED - NO ALERTS
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {lowStockProducts.map((product) => (
+                  <div key={product.id} className="flex justify-between items-center p-3 border border-orange-500/30 rounded-lg bg-orange-500/5">
+                    <div>
+                      <h4 className="font-medium text-white font-mono">{product.name}</h4>
+                      <p className="text-sm text-white/60 font-mono">
+                        CURRENT: {product.stock} • MIN: {product.minStock}
+                      </p>
                     </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                    <span className="text-xs px-2 py-1 rounded font-mono uppercase bg-orange-500/20 text-orange-400 border border-orange-500/30 animate-pulse">
+                      LOW STOCK
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </GlassCard>
         </TabsContent>
       </Tabs>
 
@@ -633,7 +746,7 @@ export default function AdminCatalogPage() {
           onUpdate={updateProductStock}
         />
       )}
-    </div>
+    </AdminLayout>
   )
 }
 

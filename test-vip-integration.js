@@ -1,11 +1,14 @@
 /**
  * VIP-Reseller Integration Test Script
  * 
- * This script demonstrates the VIP-Reseller API integration features:
+ * This script demonstrates the COMPLETE VIP-Reseller API integration features:
+ * - Profile API
+ * - Game Feature API (services, products, orders)
+ * - Prepaid API (pulsa, PPOB)
+ * - Social Media API (followers, likes, etc.)
  * - Service synchronization
- * - Product synchronization  
- * - Stock management
  * - Order processing
+ * - Webhook callback testing
  * 
  * To run: node test-vip-integration.js
  */
@@ -84,8 +87,43 @@ async function testVipIntegration() {
             console.log('   Make sure your database is set up and Prisma is configured correctly')
         }
 
-        // Test 5: Nickname Service (for supported games)
-        console.log('\n5. Testing Nickname Service...')
+        // Test 5: Profile API
+        console.log('\n5. Testing Profile API...')
+        try {
+            const profile = await vipResellerAPI.getProfile()
+            console.log(`✅ Profile retrieved: ${profile.name} (Balance: Rp ${profile.balance})`)
+        } catch (error) {
+            console.log(`⚠️  Profile API failed: ${error.message}`)
+        }
+
+        // Test 6: Prepaid API
+        console.log('\n6. Testing Prepaid API...')
+        try {
+            const prepaidServices = await vipResellerAPI.getPrepaidServices()
+            console.log(`✅ Prepaid services retrieved: ${prepaidServices.length} services`)
+            
+            if (prepaidServices.length > 0) {
+                console.log(`   Sample prepaid: ${prepaidServices[0].name}`)
+            }
+        } catch (error) {
+            console.log(`⚠️  Prepaid API failed: ${error.message}`)
+        }
+
+        // Test 7: Social Media API
+        console.log('\n7. Testing Social Media API...')
+        try {
+            const socialServices = await vipResellerAPI.getSocialMediaServices()
+            console.log(`✅ Social media services retrieved: ${socialServices.length} services`)
+            
+            if (socialServices.length > 0) {
+                console.log(`   Sample social media: ${socialServices[0].name}`)
+            }
+        } catch (error) {
+            console.log(`⚠️  Social Media API failed: ${error.message}`)
+        }
+
+        // Test 8: Nickname Service (for supported games)
+        console.log('\n8. Testing Nickname Service...')
         try {
             // Example: Mobile Legends nickname check
             const nickname = await vipResellerAPI.getNickname('mobilelegend', '136216325', '2685')
@@ -96,6 +134,22 @@ async function testVipIntegration() {
             }
         } catch (error) {
             console.log(`⚠️  Nickname service not available: ${error.message}`)
+        }
+
+        // Test 9: Webhook Endpoint Check
+        console.log('\n9. Testing Webhook Endpoint...')
+        try {
+            const response = await fetch('http://localhost:3000/api/webhooks/vip-reseller')
+            if (response.ok) {
+                const data = await response.json()
+                console.log(`✅ Webhook endpoint active: ${data.service}`)
+                console.log(`   Supported callbacks: ${data.supported_callbacks.join(', ')}`)
+            } else {
+                console.log(`⚠️  Webhook endpoint not responding: ${response.status}`)
+            }
+        } catch (error) {
+            console.log(`⚠️  Webhook test failed: ${error.message}`)
+            console.log('   Make sure your development server is running')
         }
 
         console.log('\n🎉 VIP-Reseller Integration Test Complete!')

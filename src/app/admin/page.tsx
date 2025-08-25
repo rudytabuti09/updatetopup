@@ -147,112 +147,138 @@ export default function AdminDashboard() {
   return (
     <AdminLayout>
       
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold text-white mb-2">
-          Dashboard Admin
-        </h1>
-        <p className="text-white/70">
-          Kelola sistem WMX TOPUP dan pantau aktivitas platform
+      {/* Header with retro styling */}
+      <div className="mb-8 relative">
+        <div className="flex items-center space-x-4 mb-4">
+          <h1 className="text-4xl font-heading font-bold text-transparent bg-gradient-to-r from-neon-cyan via-neon-magenta to-neon-purple bg-clip-text animate-pulse">
+            ADMIN DASHBOARD
+          </h1>
+          <div className="flex space-x-1">
+            <div className="w-2 h-2 bg-neon-green rounded-full animate-ping" />
+            <div className="w-2 h-2 bg-neon-cyan rounded-full animate-ping" style={{animationDelay: '0.2s'}} />
+            <div className="w-2 h-2 bg-neon-magenta rounded-full animate-ping" style={{animationDelay: '0.4s'}} />
+          </div>
+        </div>
+        <p className="text-white/70 font-mono text-sm tracking-wide">
+          {">"}  Kelola sistem WMX TOPUP dan pantau aktivitas platform
         </p>
+        <div className="neon-divider mt-4" />
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats Grid with enhanced retro styling */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         
         {/* Total Users */}
-        <GlassCard>
+        <GlassCard variant="cyber" hover glow>
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-white/70">Total Pengguna</p>
-              <p className="text-2xl font-bold text-white">{stats.totalUsers.toLocaleString()}</p>
-              <p className="text-xs text-green-400">↗ +12% dari bulan lalu</p>
+            <div className="space-y-1">
+              <p className="text-xs font-mono text-neon-cyan uppercase tracking-wider">TOTAL_USERS.EXE</p>
+              <p className="text-3xl font-bold text-white font-mono">{stats.totalUsers.toLocaleString()}</p>
+              <p className="text-xs text-neon-green flex items-center">
+                <span className="mr-1">▲</span> +12% SYSTEM_GROWTH
+              </p>
             </div>
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-blue-500 to-blue-600 flex items-center justify-center">
-              <Users className="h-6 w-6 text-white" />
+            <div className="w-14 h-14 rounded-lg bg-gradient-to-r from-neon-cyan to-neon-blue flex items-center justify-center shadow-glow-cyan">
+              <Users className="h-7 w-7 text-black" />
             </div>
+          </div>
+          <div className="absolute bottom-2 right-2">
+            <div className="text-xs text-white/40 font-mono">[01]</div>
           </div>
         </GlassCard>
 
         {/* Total Orders */}
-        <GlassCard>
+        <GlassCard variant="cyber" hover>
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-white/70">Total Pesanan</p>
-              <p className="text-2xl font-bold text-white">{stats.totalOrders.toLocaleString()}</p>
-              <p className="text-xs text-green-400">↗ +8% dari bulan lalu</p>
+            <div className="space-y-1">
+              <p className="text-xs font-mono text-neon-magenta uppercase tracking-wider">ORDERS_COUNT.DB</p>
+              <p className="text-3xl font-bold text-white font-mono">{stats.totalOrders.toLocaleString()}</p>
+              <p className="text-xs text-neon-green flex items-center">
+                <span className="mr-1">▲</span> +8% TRANSACTIONS
+              </p>
             </div>
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-green-500 to-green-600 flex items-center justify-center">
-              <ShoppingBag className="h-6 w-6 text-white" />
+            <div className="w-14 h-14 rounded-lg bg-gradient-to-r from-neon-green to-neon-cyan flex items-center justify-center shadow-glow-cyan animate-pulse">
+              <ShoppingBag className="h-7 w-7 text-black" />
             </div>
+          </div>
+          <div className="absolute bottom-2 right-2">
+            <div className="text-xs text-white/40 font-mono">[02]</div>
           </div>
         </GlassCard>
 
         {/* Total Revenue */}
-        <GlassCard>
+        <GlassCard variant="neon" hover>
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-white/70">Total Revenue</p>
-              <p className="text-2xl font-bold text-white">{formatCurrency(stats.totalRevenue)}</p>
-              <p className="text-xs text-green-400">↗ +15% dari bulan lalu</p>
+            <div className="space-y-1">
+              <p className="text-xs font-mono text-retro-gold uppercase tracking-wider">REVENUE_TOTAL.CR</p>
+              <p className="text-3xl font-bold text-white font-mono">{formatCurrency(stats.totalRevenue)}</p>
+              <p className="text-xs text-retro-gold flex items-center">
+                <span className="mr-1">▲</span> +15% PROFIT_MARGIN
+              </p>
             </div>
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-purple-500 to-purple-600 flex items-center justify-center">
-              <TrendingUp className="h-6 w-6 text-white" />
+            <div className="w-14 h-14 rounded-lg bg-gradient-to-r from-retro-gold to-retro-orange flex items-center justify-center shadow-glow-gold">
+              <TrendingUp className="h-7 w-7 text-black" />
             </div>
+          </div>
+          <div className="absolute bottom-2 right-2">
+            <div className="text-xs text-white/40 font-mono">[03]</div>
           </div>
         </GlassCard>
 
         {/* System Alerts */}
-        <GlassCard>
+        <GlassCard variant="cyber" hover className="border-orange-500/30">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-white/70">Sistem Alert</p>
-              <p className="text-2xl font-bold text-white">{stats.systemAlerts}</p>
-              <p className="text-xs text-orange-400">Perlu perhatian</p>
+            <div className="space-y-1">
+              <p className="text-xs font-mono text-orange-400 uppercase tracking-wider animate-pulse">ALERT_SYS.WAR</p>
+              <p className="text-3xl font-bold text-orange-300 font-mono animate-pulse">{stats.systemAlerts}</p>
+              <p className="text-xs text-orange-400 uppercase font-mono">REQUIRE_ATTENTION</p>
             </div>
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 flex items-center justify-center">
-              <AlertCircle className="h-6 w-6 text-white" />
+            <div className="w-14 h-14 rounded-lg bg-gradient-to-r from-orange-500 to-red-500 flex items-center justify-center shadow-[0_0_20px_rgba(249,115,22,0.5)] animate-pulse">
+              <AlertCircle className="h-7 w-7 text-black" />
             </div>
+          </div>
+          <div className="absolute bottom-2 right-2">
+            <div className="text-xs text-orange-400/60 font-mono animate-pulse">[!]</div>
           </div>
         </GlassCard>
 
       </div>
 
-      {/* Today Stats */}
+      {/* Today Stats with retro enhancement */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         
-        <GlassCard>
+        <GlassCard variant="cyber">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-white/70">Pesanan Hari Ini</p>
-              <p className="text-3xl font-bold text-white">{stats.todayOrders}</p>
+            <div className="space-y-2">
+              <p className="text-sm font-mono text-neon-cyan uppercase tracking-wider">TODAY::ORDERS</p>
+              <p className="text-4xl font-bold text-white font-mono animate-pulse">{stats.todayOrders}</p>
             </div>
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-cyan-500 to-cyan-600 flex items-center justify-center">
-              <Calendar className="h-5 w-5 text-white" />
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-neon-cyan to-neon-blue flex items-center justify-center shadow-glow-cyan">
+              <Calendar className="h-6 w-6 text-black" />
             </div>
           </div>
         </GlassCard>
 
-        <GlassCard>
+        <GlassCard variant="cyber">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-white/70">Revenue Hari Ini</p>
-              <p className="text-3xl font-bold text-white">{formatCurrency(stats.todayRevenue)}</p>
+            <div className="space-y-2">
+              <p className="text-sm font-mono text-retro-gold uppercase tracking-wider">TODAY::REVENUE</p>
+              <p className="text-4xl font-bold text-retro-gold font-mono drop-shadow-glow-gold">{formatCurrency(stats.todayRevenue)}</p>
             </div>
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 flex items-center justify-center">
-              <DollarSign className="h-5 w-5 text-white" />
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-retro-gold to-retro-orange flex items-center justify-center shadow-glow-gold">
+              <DollarSign className="h-6 w-6 text-black" />
             </div>
           </div>
         </GlassCard>
 
-        <GlassCard>
+        <GlassCard variant="cyber" className="border-amber-500/30">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-white/70">Pesanan Pending</p>
-              <p className="text-3xl font-bold text-white">{stats.pendingOrders}</p>
+            <div className="space-y-2">
+              <p className="text-sm font-mono text-amber-400 uppercase tracking-wider animate-pulse">PENDING::QUEUE</p>
+              <p className="text-4xl font-bold text-amber-300 font-mono animate-pulse">{stats.pendingOrders}</p>
             </div>
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-amber-500 to-amber-600 flex items-center justify-center">
-              <Clock className="h-5 w-5 text-white" />
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 flex items-center justify-center shadow-[0_0_20px_rgba(245,158,11,0.5)] animate-pulse">
+              <Clock className="h-6 w-6 text-black" />
             </div>
           </div>
         </GlassCard>
@@ -263,8 +289,14 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         
         {/* Recent Activity */}
-        <GlassCard>
-          <h2 className="text-xl font-bold text-white mb-6">Aktivitas Terbaru</h2>
+        <GlassCard variant="cyber">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-neon-cyan uppercase font-mono tracking-wider">ACTIVITY_LOG.SYS</h2>
+            <div className="flex space-x-1">
+              <div className="w-2 h-2 bg-neon-green rounded-full animate-pulse" />
+              <div className="w-2 h-2 bg-neon-cyan rounded-full animate-pulse" style={{animationDelay: '0.5s'}} />
+            </div>
+          </div>
           
           <div className="space-y-4">
             {recentActivity.map((activity) => (
@@ -282,8 +314,14 @@ export default function AdminDashboard() {
         </GlassCard>
 
         {/* Recent Orders */}
-        <GlassCard>
-          <h2 className="text-xl font-bold text-white mb-6">Pesanan Terbaru</h2>
+        <GlassCard variant="cyber">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-neon-magenta uppercase font-mono tracking-wider">ORDER_QUEUE.DB</h2>
+            <div className="flex space-x-1">
+              <div className="w-2 h-2 bg-neon-magenta rounded-full animate-pulse" />
+              <div className="w-2 h-2 bg-neon-pink rounded-full animate-pulse" style={{animationDelay: '0.3s'}} />
+            </div>
+          </div>
           
           <div className="space-y-4">
             {recentOrders.map((order) => (

@@ -223,9 +223,9 @@ export default function ServiceDetailPage() {
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-red-600 text-2xl">⚠️</span>
             </div>
-            <h1 className="text-2xl font-bold text-white mb-2">Service Not Found</h1>
-            <p className="text-white/70 mb-6">{error || 'The requested service could not be found.'}</p>
-            <Button onClick={() => router.push('/catalog')} className="bg-gradient-to-r from-neon-magenta to-neon-cyan">
+            <h1 className="text-2xl font-bold text-wmx-gray-800 mb-2">Service Not Found</h1>
+            <p className="text-wmx-gray-600 mb-6">{error || 'The requested service could not be found.'}</p>
+            <Button onClick={() => router.push('/catalog')} className="bg-gradient-to-r from-neon-magenta to-neon-cyan text-white">
               Back to Catalog
             </Button>
           </div>
@@ -236,18 +236,31 @@ export default function ServiceDetailPage() {
 
   return (
     <RootLayout>
-      <div className="min-h-screen py-8">
-        <div className="container mx-auto px-4">
+      <div className="min-h-screen py-8 relative">
+        {/* Decorative Elements */}
+        <div className="absolute top-20 left-10 animate-float opacity-20">
+          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-neon-magenta to-neon-cyan blur-sm"></div>
+        </div>
+        <div className="absolute top-40 right-20 animate-float opacity-30" style={{animationDelay: '1s'}}>
+          <div className="w-6 h-6 rounded-full bg-gradient-to-r from-neon-cyan to-retro-gold blur-sm"></div>
+        </div>
+        <div className="absolute bottom-20 left-1/4 animate-float opacity-25" style={{animationDelay: '0.5s'}}>
+          <div className="w-4 h-4 rounded-full bg-gradient-to-r from-retro-gold to-neon-purple blur-sm"></div>
+        </div>
+        
+        <div className="container mx-auto px-4 relative z-10">
           
-          {/* Back Button */}
-          <Button 
-            variant="ghost" 
-            onClick={() => router.back()} 
-            className="mb-6 text-white hover:text-neon-blue"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Kembali
-          </Button>
+          {/* Back Button with retro styling */}
+          <div className="mb-6">
+            <Button 
+              variant="ghost" 
+              onClick={() => router.back()} 
+              className="text-wmx-gray-800 hover:text-neon-magenta hover:bg-neon-magenta/10 transition-all duration-300 font-retro"
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Kembali
+            </Button>
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
@@ -255,36 +268,49 @@ export default function ServiceDetailPage() {
             <div className="space-y-6">
               
               {/* Service Header */}
-              <GlassCard className="p-6">
-                <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r ${service.gradient || 'from-blue-500 to-purple-600'} text-4xl mb-4`}>
-                  {service.image || '🎮'}
+              <GlassCard className="p-6 bg-white/95 border-neon-magenta/20 relative overflow-hidden">
+                {/* Retro grid pattern background */}
+                <div className="absolute inset-0 opacity-5">
+                  <div className="retro-grid h-full" />
                 </div>
-                <h1 className="text-3xl font-heading font-bold text-white mb-2">
-                  {service.name}
-                </h1>
-                <p className="text-white/70 mb-4">{service.description || 'Top up untuk ' + service.name}</p>
                 
-                <div className="flex items-center gap-4 text-sm">
-                  <div className="flex items-center text-green-400">
-                    <Zap className="h-4 w-4 mr-1" />
-                    Proses Instan
+                <div className="relative z-10">
+                  <div className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-r ${service.gradient || 'from-neon-magenta to-neon-cyan'} text-4xl mb-4 drop-shadow-glow-magenta animate-pulse`}>
+                    {service.image || '🎮'}
                   </div>
-                  <div className="flex items-center text-blue-400">
-                    <Shield className="h-4 w-4 mr-1" />
-                    100% Aman
+                  <h1 className="text-3xl font-heading font-bold text-wmx-gray-800 mb-2">
+                    {service.name}
+                  </h1>
+                  <p className="text-wmx-gray-600 mb-4">{service.description || 'Top up untuk ' + service.name}</p>
+                  
+                  <div className="flex items-center gap-4 text-sm">
+                    <div className="flex items-center text-green-600 font-medium">
+                      <Zap className="h-4 w-4 mr-1" />
+                      Proses Instan
+                    </div>
+                    <div className="flex items-center text-neon-blue font-medium">
+                      <Shield className="h-4 w-4 mr-1" />
+                      100% Aman
+                    </div>
+                    <StatusBadge status="success">Tersedia</StatusBadge>
                   </div>
-                  <StatusBadge status="success">Tersedia</StatusBadge>
                 </div>
               </GlassCard>
 
               {/* Order Form */}
-              <GlassCard className="p-6">
-                <h2 className="text-xl font-bold text-white mb-6">Detail Pemesanan</h2>
+              <GlassCard className="p-6 bg-white/95 border-neon-cyan/20 relative">
+                {/* Subtle neon glow line */}
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neon-cyan/50 to-transparent"></div>
+                
+                <h2 className="text-xl font-bold text-wmx-gray-800 mb-6 font-heading flex items-center">
+                  <div className="w-2 h-2 bg-gradient-to-r from-neon-cyan to-neon-magenta rounded-full mr-3 animate-pulse"></div>
+                  Detail Pemesanan
+                </h2>
                 
                 <div className="space-y-4">
                   {/* Customer ID Input */}
                   <div>
-                    <label className="block text-white/80 text-sm font-medium mb-2">
+                    <label className="block text-wmx-gray-700 text-sm font-medium mb-2">
                       {service.inputLabel || 'User ID'} *
                     </label>
                     <Input
@@ -292,8 +318,8 @@ export default function ServiceDetailPage() {
                       value={customerId}
                       onChange={(e) => setCustomerId(e.target.value)}
                       className={cn(
-                        "bg-white/5 border-white/20 text-white placeholder:text-white/50",
-                        errors.customerId && "border-red-400"
+                        "bg-white border border-wmx-gray-300 text-wmx-gray-800 placeholder:text-wmx-gray-400 focus:border-neon-magenta focus:ring-neon-magenta/20",
+                        errors.customerId && "border-red-500"
                       )}
                     />
                     {errors.customerId && (
@@ -304,7 +330,7 @@ export default function ServiceDetailPage() {
                   {/* Nickname Display */}
                   {service.nicknameSupported && (
                     <div>
-                      <label className="block text-white/80 text-sm font-medium mb-2">
+                      <label className="block text-wmx-gray-700 text-sm font-medium mb-2">
                         Nickname
                       </label>
                       <div className="relative">
@@ -312,7 +338,7 @@ export default function ServiceDetailPage() {
                           value={nickname}
                           readOnly
                           placeholder="Nickname akan muncul otomatis"
-                          className="bg-white/5 border-white/20 text-white placeholder:text-white/50"
+                          className="bg-white border border-wmx-gray-300 text-wmx-gray-800 placeholder:text-wmx-gray-400"
                         />
                         {nicknameLoading && (
                           <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
@@ -328,19 +354,19 @@ export default function ServiceDetailPage() {
 
                   {/* Email Input */}
                   <div>
-                    <label className="block text-white/80 text-sm font-medium mb-2">
+                    <label className="block text-wmx-gray-700 text-sm font-medium mb-2">
                       Email *
                     </label>
                     <div className="relative">
-                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-wmx-gray-400" />
                       <Input
                         type="email"
                         placeholder="email@example.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className={cn(
-                          "pl-10 bg-white/5 border-white/20 text-white placeholder:text-white/50",
-                          errors.email && "border-red-400"
+                          "pl-10 bg-white border border-wmx-gray-300 text-wmx-gray-800 placeholder:text-wmx-gray-400 focus:border-neon-magenta focus:ring-neon-magenta/20",
+                          errors.email && "border-red-500"
                         )}
                       />
                     </div>
@@ -351,18 +377,18 @@ export default function ServiceDetailPage() {
 
                   {/* Phone Input */}
                   <div>
-                    <label className="block text-white/80 text-sm font-medium mb-2">
+                    <label className="block text-wmx-gray-700 text-sm font-medium mb-2">
                       Nomor WhatsApp *
                     </label>
                     <div className="relative">
-                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-white/50" />
+                      <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-wmx-gray-400" />
                       <Input
                         placeholder="08123456789"
                         value={phone}
                         onChange={(e) => setPhone(e.target.value)}
                         className={cn(
-                          "pl-10 bg-white/5 border-white/20 text-white placeholder:text-white/50",
-                          errors.phone && "border-red-400"
+                          "pl-10 bg-white border border-wmx-gray-300 text-wmx-gray-800 placeholder:text-wmx-gray-400 focus:border-neon-magenta focus:ring-neon-magenta/20",
+                          errors.phone && "border-red-500"
                         )}
                       />
                     </div>
@@ -378,8 +404,14 @@ export default function ServiceDetailPage() {
             <div className="space-y-6">
               
               {/* Products List */}
-              <GlassCard className="p-6">
-                <h2 className="text-xl font-bold text-white mb-6">Pilih Nominal</h2>
+              <GlassCard className="p-6 bg-white/95 border-neon-magenta/20 relative">
+                {/* Subtle neon glow line */}
+                <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neon-magenta/50 to-transparent"></div>
+                
+                <h2 className="text-xl font-bold text-wmx-gray-800 mb-6 font-heading flex items-center">
+                  <div className="w-2 h-2 bg-gradient-to-r from-neon-magenta to-neon-cyan rounded-full mr-3 animate-pulse"></div>
+                  Pilih Nominal
+                </h2>
                 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {service.products.map((product) => (
@@ -387,15 +419,15 @@ export default function ServiceDetailPage() {
                       key={product.id}
                       onClick={() => setSelectedProductId(product.id)}
                       className={cn(
-                        "relative p-4 rounded-xl border-2 transition-all cursor-pointer group",
+                        "relative p-4 rounded-xl border-2 transition-all cursor-pointer group overflow-hidden",
                         selectedProductId === product.id 
-                          ? "border-neon-blue bg-neon-blue/10" 
-                          : "border-white/20 bg-white/5 hover:border-white/40 hover:bg-white/10"
+                          ? "border-neon-magenta bg-neon-magenta/5 shadow-glow-magenta" 
+                          : "border-wmx-gray-200 bg-white hover:border-neon-magenta/30 hover:bg-neon-magenta/5"
                       )}
                     >
                       {/* Popular Badge */}
                       {product.isPopular && (
-                        <div className="absolute -top-2 -right-2 bg-gradient-primary text-white text-xs font-bold px-2 py-1 rounded-full">
+                        <div className="absolute -top-2 -right-2 bg-gradient-to-r from-neon-magenta to-neon-cyan text-white text-xs font-bold px-2 py-1 rounded-full">
                           Popular
                         </div>
                       )}
@@ -408,28 +440,28 @@ export default function ServiceDetailPage() {
                       )}
                       
                       <div className="text-center">
-                        <h3 className="font-bold text-white mb-2">{product.name}</h3>
+                        <h3 className="font-bold text-wmx-gray-800 mb-2 font-retro">{product.name}</h3>
                         
                         <div className="mb-3">
-                          <div className="text-lg font-bold text-neon-blue">
+                          <div className="text-lg font-bold text-neon-magenta">
                             Rp {product.price.toLocaleString('id-ID')}
                           </div>
                           {product.originalPrice && (
-                            <div className="text-sm text-white/60 line-through">
+                            <div className="text-sm text-wmx-gray-500 line-through">
                               Rp {product.originalPrice.toLocaleString('id-ID')}
                             </div>
                           )}
                         </div>
                         
                         {product.description && (
-                          <p className="text-xs text-white/70">{product.description}</p>
+                          <p className="text-xs text-wmx-gray-600">{product.description}</p>
                         )}
                       </div>
                       
                       {/* Selected Indicator */}
                       {selectedProductId === product.id && (
-                        <div className="absolute inset-0 border-2 border-neon-blue rounded-xl pointer-events-none">
-                          <div className="absolute top-2 right-2 w-6 h-6 bg-neon-blue rounded-full flex items-center justify-center">
+                        <div className="absolute inset-0 border-2 border-neon-magenta rounded-xl pointer-events-none">
+                          <div className="absolute top-2 right-2 w-6 h-6 bg-neon-magenta rounded-full flex items-center justify-center shadow-glow-magenta">
                             <Check className="h-4 w-4 text-white" />
                           </div>
                         </div>
@@ -445,26 +477,32 @@ export default function ServiceDetailPage() {
 
               {/* Order Summary */}
               {selectedProduct && (
-                <GlassCard className="p-6">
-                  <h3 className="text-lg font-bold text-white mb-4">Ringkasan Pesanan</h3>
+                <GlassCard className="p-6 bg-white/95 border-neon-cyan/20 relative">
+                  {/* Subtle neon glow line */}
+                  <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-neon-cyan/50 to-transparent"></div>
+                  
+                  <h3 className="text-lg font-bold text-wmx-gray-800 mb-4 font-heading flex items-center">
+                    <div className="w-2 h-2 bg-gradient-to-r from-neon-cyan to-retro-gold rounded-full mr-3 animate-pulse"></div>
+                    Ringkasan Pesanan
+                  </h3>
                   
                   <div className="space-y-3">
-                    <div className="flex justify-between text-white/70">
+                    <div className="flex justify-between text-wmx-gray-600">
                       <span>Produk</span>
                       <span>{selectedProduct.name}</span>
                     </div>
-                    <div className="flex justify-between text-white/70">
+                    <div className="flex justify-between text-wmx-gray-600">
                       <span>Harga</span>
                       <span>Rp {selectedProduct.price.toLocaleString('id-ID')}</span>
                     </div>
-                    <div className="flex justify-between text-white/70">
+                    <div className="flex justify-between text-wmx-gray-600">
                       <span>Biaya Admin</span>
-                      <span className="text-green-400">GRATIS</span>
+                      <span className="text-green-600 font-medium">GRATIS</span>
                     </div>
-                    <hr className="border-white/20" />
-                    <div className="flex justify-between text-lg font-bold text-white">
+                    <hr className="border-wmx-gray-200" />
+                    <div className="flex justify-between text-lg font-bold text-wmx-gray-800">
                       <span>Total</span>
-                      <span>Rp {selectedProduct.price.toLocaleString('id-ID')}</span>
+                      <span className="text-neon-magenta">Rp {selectedProduct.price.toLocaleString('id-ID')}</span>
                     </div>
                   </div>
 
@@ -475,11 +513,12 @@ export default function ServiceDetailPage() {
                   <GradientButton
                     variant="primary"
                     size="lg"
-                    className="w-full mt-6"
+                    className="w-full mt-6 font-heading uppercase tracking-wider"
                     onClick={handleOrder}
                     loading={loading}
                     disabled={!selectedProductId || loading}
                   >
+                    <Zap className="h-4 w-4 mr-2" />
                     Bayar Sekarang
                   </GradientButton>
                 </GlassCard>

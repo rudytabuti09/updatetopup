@@ -9,6 +9,14 @@ if (!VIP_API_KEY || !VIP_API_ID) {
   console.warn('VIP-Reseller API credentials not configured')
 }
 
+// VIP-Reseller API Endpoints
+enum VipEndpoint {
+  PROFILE = 'profile',
+  PREPAID = 'prepaid',
+  SOCIAL_MEDIA = 'social-media',
+  GAME_FEATURE = 'game-feature'
+}
+
 interface VipProfile {
   id: string
   username: string
@@ -116,6 +124,90 @@ interface VipNicknameResponse {
   message: string
 }
 
+// ===========================================
+// PREPAID API INTERFACES
+// ===========================================
+
+interface VipPrepaidOrderRequest {
+  type: 'order'
+  service: string
+  data_no: string
+}
+
+interface VipPrepaidOrderResponse {
+  result: boolean
+  data: {
+    trxid: string
+    data: string
+    code: string
+    service: string
+    status: string
+    note?: string
+    balance: number
+    price: number
+    sn?: string
+  }
+  message: string
+}
+
+interface VipPrepaidStatusResponse {
+  result: boolean
+  data: Array<{
+    trxid: string
+    data: string
+    code: string
+    service: string
+    status: string
+    note?: string
+    price: number
+    created_date?: string
+    last_update?: string
+  }>
+  message: string
+}
+
+// ===========================================
+// SOCIAL MEDIA API INTERFACES
+// ===========================================
+
+interface VipSocialMediaOrderRequest {
+  type: 'order'
+  service: string
+  quantity: number
+  data: string
+}
+
+interface VipSocialMediaOrderResponse {
+  result: boolean
+  data: {
+    trxid: string
+    data: string
+    service: string
+    quantity: number
+    status: string
+    note?: string
+    balance: number
+    price: number
+  }
+  message: string
+}
+
+interface VipSocialMediaStatusResponse {
+  result: boolean
+  data: Array<{
+    trxid: string
+    data: string
+    service: string
+    quantity: number
+    status: string
+    note?: string
+    price: number
+    created_date?: string
+    last_update?: string
+  }>
+  message: string
+}
+
 class VipResellerAPI {
   private apiKey: string
   private apiId: string
@@ -132,7 +224,7 @@ class VipResellerAPI {
     return CryptoJS.MD5(this.apiId + this.apiKey).toString()
   }
 
-  private async makeRequest<T = unknown>(data: Record<string, unknown> = {}): Promise<T> {
+  private async makeRequest<T = unknown>(endpoint: VipEndpoint, data: Record<string, unknown> = {}): Promise<T> {
     try {
       const requestData = {
         key: this.apiKey,
@@ -140,7 +232,7 @@ class VipResellerAPI {
         ...data
       }
 
-      const response = await axios.post(`${this.baseURL}/game-feature`, requestData, {
+      const response = await axios.post(`${this.baseURL}/${endpoint}`, requestData, {
         headers: {
           'Content-Type': 'application/x-www-form-urlencoded',
         },
@@ -149,36 +241,59 @@ class VipResellerAPI {
 
       return response.data
     } catch (error) {
-      console.error(`VIP-Reseller API Error:`, error)
+      console.error(`VIP-Reseller API Error (${endpoint}):`, error)
       throw new Error(`API request failed: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
+  // ===========================================
+  // PROFILE API METHODS
+  // ===========================================
+  
+  // Get profile information
+  async getProfile(): Promise<VipProfile> {
+    const response = await this.makeRequest<{ result: boolean, data: VipProfile }>(VipEndpoint.PROFILE)
+    if (!response.result) {
+      throw new Error('Failed to get profile information')
+    }
+    return response.data
+  }
+
+  // Get account balance
+  async getBalance(): Promise<{ balance: number }> {
+    const profile = await this.getProfile()
+    return { balance: profile.balance }
+  }
+
+  // ===========================================
+  // GAME FEATURE API METHODS
+  // ===========================================
+
   // Get available services/games
   async getServices(): Promise<VipService[]> {
-    const response = await this.makeRequest<{ result: boolean, data: VipService[] }>({ type: 'services' })
+    const response = await this.makeRequest<{ result: boolean, data: VipService[] }>(VipEndpoint.GAME_FEATURE, { type: 'services' })
     return response.data || []
   }
 
   // Get price list for all services
   async getPriceList(): Promise<VipProduct[]> {
-    const response = await this.makeRequest<{ result: boolean, data: VipProduct[] }>({ type: 'price-list' })
+    const response = await this.makeRequest<{ result: boolean, data: VipProduct[] }>(VipEndpoint.GAME_FEATURE, { type: 'price-list' })
     return response.data || []
   }
 
   // Get stock information
   async getStock(): Promise<VipStockResponse> {
-    return this.makeRequest({ type: 'get-stock' })
+    return this.makeRequest(VipEndpoint.GAME_FEATURE, { type: 'get-stock' })
   }
 
-  // Create new order
-  async createOrder(orderData: VipOrderRequest): Promise<VipOrderResponse> {
-    return this.makeRequest(orderData as unknown as Record<string, unknown>)
+  // Create new game order
+  async createGameOrder(orderData: VipOrderRequest): Promise<VipOrderResponse> {
+    return this.makeRequest(VipEndpoint.GAME_FEATURE, orderData as unknown as Record<string, unknown>)
   }
 
-  // Check order status
-  async getOrderStatus(trxId: string): Promise<VipStatusResponse> {
-    return this.makeRequest({ type: 'status', trxid: trxId })
+  // Check game order status
+  async getGameOrderStatus(trxId: string): Promise<VipStatusResponse> {
+    return this.makeRequest(VipEndpoint.GAME_FEATURE, { type: 'status', trxid: trxId })
   }
 
   // Get nickname for certain games (if supported)
@@ -193,15 +308,97 @@ class VipResellerAPI {
       requestData.data_zone = dataZone
     }
     
-    return this.makeRequest(requestData as unknown as Record<string, unknown>)
+    return this.makeRequest(VipEndpoint.GAME_FEATURE, requestData as unknown as Record<string, unknown>)
   }
 
-  // Get account balance
-  async getBalance(): Promise<{ balance: number }> {
-    const response = await this.makeRequest<{ result: boolean, data: { balance: number } }>({ type: 'balance' })
-    return { balance: response.data?.balance || 0 }
+  // ===========================================
+  // PREPAID API METHODS (Pulsa & PPOB)
+  // ===========================================
+
+  // Get prepaid services
+  async getPrepaidServices(): Promise<VipService[]> {
+    const response = await this.makeRequest<{ result: boolean, data: VipService[] }>(VipEndpoint.PREPAID, { type: 'services' })
+    return response.data || []
+  }
+
+  // Create prepaid order (pulsa, data, PLN, etc.)
+  async createPrepaidOrder(orderData: VipPrepaidOrderRequest): Promise<VipPrepaidOrderResponse> {
+    return this.makeRequest(VipEndpoint.PREPAID, orderData as unknown as Record<string, unknown>)
+  }
+
+  // Check prepaid order status
+  async getPrepaidOrderStatus(trxId?: string, limit?: number): Promise<VipPrepaidStatusResponse> {
+    const requestData: Record<string, unknown> = { type: 'status' }
+    
+    if (trxId) {
+      requestData.trxid = trxId
+    }
+    
+    if (limit) {
+      requestData.limit = limit
+    }
+    
+    return this.makeRequest(VipEndpoint.PREPAID, requestData)
+  }
+
+  // ===========================================
+  // SOCIAL MEDIA API METHODS
+  // ===========================================
+
+  // Get social media services
+  async getSocialMediaServices(): Promise<VipService[]> {
+    const response = await this.makeRequest<{ result: boolean, data: VipService[] }>(VipEndpoint.SOCIAL_MEDIA, { type: 'services' })
+    return response.data || []
+  }
+
+  // Create social media order (followers, likes, etc.)
+  async createSocialMediaOrder(orderData: VipSocialMediaOrderRequest): Promise<VipSocialMediaOrderResponse> {
+    return this.makeRequest(VipEndpoint.SOCIAL_MEDIA, orderData as unknown as Record<string, unknown>)
+  }
+
+  // Check social media order status
+  async getSocialMediaOrderStatus(trxId?: string, limit?: number): Promise<VipSocialMediaStatusResponse> {
+    const requestData: Record<string, unknown> = { type: 'status' }
+    
+    if (trxId) {
+      requestData.trxid = trxId
+    }
+    
+    if (limit) {
+      requestData.limit = limit
+    }
+    
+    return this.makeRequest(VipEndpoint.SOCIAL_MEDIA, requestData)
+  }
+
+  // ===========================================
+  // BACKWARD COMPATIBILITY METHODS (deprecated)
+  // ===========================================
+
+  /** @deprecated Use createGameOrder instead */
+  async createOrder(orderData: VipOrderRequest): Promise<VipOrderResponse> {
+    return this.createGameOrder(orderData)
+  }
+
+  /** @deprecated Use getGameOrderStatus instead */
+  async getOrderStatus(trxId: string): Promise<VipStatusResponse> {
+    return this.getGameOrderStatus(trxId)
   }
 }
 
 export const vipResellerAPI = new VipResellerAPI()
-export type { VipProfile, VipService, VipProduct, VipOrderRequest, VipOrderResponse, VipStatusResponse }
+export type { 
+  VipProfile, 
+  VipService, 
+  VipProduct, 
+  VipOrderRequest, 
+  VipOrderResponse, 
+  VipStatusResponse,
+  VipPrepaidOrderRequest,
+  VipPrepaidOrderResponse,
+  VipPrepaidStatusResponse,
+  VipSocialMediaOrderRequest,
+  VipSocialMediaOrderResponse,
+  VipSocialMediaStatusResponse,
+  VipEndpoint
+}
