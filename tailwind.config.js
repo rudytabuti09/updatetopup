@@ -63,6 +63,11 @@ module.exports = {
           purple: "#8B5CF6",
           pink: "#EC4899",
           green: "#00FF88",
+          // Accessible variants (WCAG AA compliant)
+          "magenta-accessible": "#D946EF",
+          "cyan-accessible": "#0891B2",
+          "purple-accessible": "#7C3AED",
+          "green-accessible": "#059669",
         },
         retro: {
           gold: "#FFD700",
@@ -70,6 +75,8 @@ module.exports = {
           sunset: "#FF4E50",
           sky: "#87CEEB",
           lavender: "#E6E6FA",
+          // Accessible variant
+          "gold-accessible": "#CA8A04",
         },
         wmx: {
           light: "#F8F9FE",

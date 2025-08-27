@@ -2,6 +2,7 @@
 
 import { Navbar } from "./navbar"
 import { Footer } from "./footer"
+import { BottomNavigation } from "./bottom-nav"
 
 interface RootLayoutProps {
   children: React.ReactNode
@@ -15,6 +16,7 @@ export function RootLayout({ children }: RootLayoutProps) {
         {children}
       </main>
       <Footer />
+      <BottomNavigation />
     </div>
   )
 }

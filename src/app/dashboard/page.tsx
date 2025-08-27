@@ -2,91 +2,41 @@
 
 import * as React from 'react'
 import { useSession } from 'next-auth/react'
-import { ShoppingBag, Wallet, Clock, TrendingUp, ArrowRight, Calendar } from 'lucide-react'
+import { RefreshCw, WifiOff } from 'lucide-react'
 import { DashboardLayout } from '@/components/layout/dashboard-layout'
-import { GlassCard } from '@/components/ui/glass-card'
 import { GradientButton } from '@/components/ui/gradient-button'
-import { StatusBadge } from '@/components/ui/status-badge'
+import { Spinner } from '@/components/ui/loading'
 import { useRouter } from 'next/navigation'
+import { useDashboard, useAnimatedStats } from '@/hooks/use-dashboard-optimized'
+import { useToast } from '@/hooks/use-toast'
+import { cn } from '@/lib/utils'
+import { StatsGrid, OrdersList, QuickActions } from '@/components/dashboard/optimized-components'
 
-interface DashboardStats {
-  totalOrders: number
-  totalSpent: number
-  pendingOrders: number
-  successOrders: number
-  balance: number
-}
-
-interface RecentOrder {
-  id: string
-  orderNumber: string
-  service: string
-  amount: number
-  status: 'PENDING' | 'PROCESSING' | 'SUCCESS' | 'FAILED'
-  createdAt: string
-}
-
-export default function DashboardPage() {
+// Memoized dashboard page for optimal performance
+const DashboardPage = React.memo(() => {
   const { data: session } = useSession()
   const router = useRouter()
-  const [stats, setStats] = React.useState<DashboardStats>({
-    totalOrders: 0,
-    totalSpent: 0,
-    pendingOrders: 0,
-    successOrders: 0,
-    balance: 0
-  })
-  const [recentOrders, setRecentOrders] = React.useState<RecentOrder[]>([])
-  const [loading, setLoading] = React.useState(true)
-
-  React.useEffect(() => {
-    fetchDashboardData()
-  }, [])
-
-  const fetchDashboardData = async () => {
-    try {
-      // Mock data for demo - replace with actual API calls
-      setStats({
-        totalOrders: 15,
-        totalSpent: 450000,
-        pendingOrders: 2,
-        successOrders: 13,
-        balance: 50000
+  const { toast } = useToast()
+  
+  // Real-time dashboard data with optimized polling
+  const { data, loading, error, isOnline, lastUpdate, refetch } = useDashboard({
+    enableRealtime: true,
+    pollingInterval: 30000, // 30 seconds
+    onBalanceChange: React.useCallback((newBalance: number) => {
+      // Show notification when balance changes
+      toast({
+        title: 'Balance Updated',
+        description: `Your balance is now ${formatCurrency(newBalance)}`,
+        variant: 'default'
       })
+    }, [toast]),
+    onOrderUpdate: React.useCallback(() => {
+      // Already handled in the hook via toast notifications
+    }, [])
+  })
 
-      setRecentOrders([
-        {
-          id: '1',
-          orderNumber: 'WMX-1234567890',
-          service: 'Mobile Legends - 86 Diamond',
-          amount: 15000,
-          status: 'SUCCESS',
-          createdAt: '2024-01-15T10:30:00Z'
-        },
-        {
-          id: '2',
-          orderNumber: 'WMX-1234567891',
-          service: 'Free Fire - 70 Diamond',
-          amount: 10000,
-          status: 'PROCESSING',
-          createdAt: '2024-01-15T09:15:00Z'
-        },
-        {
-          id: '3',
-          orderNumber: 'WMX-1234567892',
-          service: 'Telkomsel - Pulsa 25.000',
-          amount: 26000,
-          status: 'SUCCESS',
-          createdAt: '2024-01-14T16:45:00Z'
-        }
-      ])
-
-      setLoading(false)
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error)
-      setLoading(false)
-    }
-  }
+  // Animated stats for smooth transitions
+  const { stats: animatedStats, animatingFields } = useAnimatedStats(data?.stats || null)
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -105,7 +55,7 @@ export default function DashboardPage() {
     }).format(new Date(dateString))
   }
 
-  const convertOrderStatus = (status: string) => {
+  const convertOrderStatus = (status: string): 'pending' | 'processing' | 'success' | 'failed' | 'waiting' | 'cancelled' => {
     switch (status) {
       case 'PENDING': return 'pending'
       case 'WAITING_PAYMENT': return 'waiting'
@@ -118,13 +68,54 @@ export default function DashboardPage() {
     }
   }
 
+  // Memoized navigation callbacks to prevent re-renders (moved before conditionals)
+  const handleViewAllOrders = React.useCallback(() => {
+    router.push('/dashboard/orders')
+  }, [router])
+
+  const handleShopNavigation = React.useCallback(() => {
+    router.push('/catalog')
+  }, [router])
+
+  const handleOrdersNavigation = React.useCallback(() => {
+    router.push('/dashboard/orders')
+  }, [router])
+
+  const handleBalanceNavigation = React.useCallback(() => {
+    router.push('/dashboard/balance')
+  }, [router])
+
+  // Memoized format functions
+  const memoizedFormatCurrency = React.useCallback(formatCurrency, [])
+  const memoizedFormatDate = React.useCallback(formatDate, [])
+  const memoizedConvertOrderStatus = React.useCallback(convertOrderStatus, [])
+
+  // Show error state
+  if (error && !data) {
+    return (
+      <DashboardLayout>
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <WifiOff className="h-12 w-12 text-red-500 mx-auto mb-4" />
+            <p className="text-red-500 mb-4">{error}</p>
+            <GradientButton onClick={refetch}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </GradientButton>
+          </div>
+        </div>
+      </DashboardLayout>
+    )
+  }
+
+  // Show loading state
   if (loading) {
     return (
       <DashboardLayout>
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
-            <div className="loading-spinner mb-4" />
-            <p className="text-white/70">Memuat dashboard...</p>
+            <Spinner size="xl" className="mb-4" />
+            <p className="text-white/70">Loading dashboard...</p>
           </div>
         </div>
       </DashboardLayout>
@@ -133,190 +124,86 @@ export default function DashboardPage() {
 
   return (
     <DashboardLayout>
-      
-      {/* Welcome Section */}
+      {/* Welcome Section with Status */}
       <div className="mb-8">
-        <h1 className="text-3xl font-heading font-bold text-wmx-dark mb-2">
-          <span className="text-glow-magenta">Welcome back,</span> {session?.user.name}! 🎮
-        </h1>
-        <p className="text-wmx-gray-600">
-          Manage your orders and track your gaming activities
-        </p>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        
-        {/* Total Orders */}
-        <GlassCard hover>
-          <div className="flex items-center">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-neon-cyan to-neon-blue flex items-center justify-center relative">
-              <ShoppingBag className="h-6 w-6 text-white relative z-10" />
-              <div className="absolute inset-0 bg-neon-cyan/20 blur-lg rounded-lg" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-wmx-gray-600">Total Orders</p>
-              <p className="text-2xl font-bold text-glow-cyan">{stats.totalOrders}</p>
-            </div>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-heading font-bold text-wmx-dark mb-2">
+              <span className="text-glow-magenta">Welcome back,</span> {session?.user?.name}! 🎮
+            </h1>
+            <p className="text-wmx-gray-600">
+              Manage your orders and track your gaming activities
+            </p>
           </div>
-        </GlassCard>
-
-        {/* Total Spent */}
-        <GlassCard hover>
-          <div className="flex items-center">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-retro-gold to-retro-orange flex items-center justify-center relative">
-              <TrendingUp className="h-6 w-6 text-white relative z-10" />
-              <div className="absolute inset-0 bg-retro-gold/20 blur-lg rounded-lg" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-wmx-gray-600">Total Spent</p>
-              <p className="text-2xl font-bold text-retro-gold">{formatCurrency(stats.totalSpent)}</p>
-            </div>
-          </div>
-        </GlassCard>
-
-        {/* Balance */}
-        <GlassCard hover>
-          <div className="flex items-center">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-neon-magenta to-neon-pink flex items-center justify-center relative">
-              <Wallet className="h-6 w-6 text-white relative z-10" />
-              <div className="absolute inset-0 bg-neon-magenta/20 blur-lg rounded-lg" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-wmx-gray-600">Balance</p>
-              <p className="text-2xl font-bold text-glow-magenta">{formatCurrency(stats.balance)}</p>
-            </div>
-          </div>
-        </GlassCard>
-
-        {/* Pending Orders */}
-        <GlassCard hover>
-          <div className="flex items-center">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-neon-purple to-retro-orange flex items-center justify-center relative">
-              <Clock className="h-6 w-6 text-white relative z-10" />
-              <div className="absolute inset-0 bg-neon-purple/20 blur-lg rounded-lg" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-wmx-gray-600">Pending Orders</p>
-              <p className="text-2xl font-bold text-neon-purple">{stats.pendingOrders}</p>
-            </div>
-          </div>
-        </GlassCard>
-
-      </div>
-
-      {/* Recent Orders */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        
-        {/* Orders List */}
-        <GlassCard hover>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-heading font-bold text-wmx-dark">Recent Orders</h2>
-            <GradientButton 
-              variant="secondary" 
-              size="sm"
-              onClick={() => router.push('/dashboard/orders')}
-            >
-              <div className="flex items-center">
-                View All
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </div>
-            </GradientButton>
-          </div>
-
-          <div className="space-y-4">
-            {recentOrders.map((order) => (
-              <div key={order.id} className="p-4 rounded-lg bg-white/80 border border-neon-magenta/20 hover:border-neon-magenta/40 transition-all duration-300 hover:shadow-glow-magenta group">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-neon-cyan to-neon-blue flex items-center justify-center relative">
-                      <ShoppingBag className="h-4 w-4 text-white relative z-10" />
-                      <div className="absolute inset-0 bg-neon-cyan/20 blur-lg rounded-lg" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-wmx-dark text-sm font-retro">{order.service}</p>
-                      <p className="text-xs text-wmx-gray-600">{order.orderNumber}</p>
-                    </div>
-                  </div>
-                  <StatusBadge status={convertOrderStatus(order.status)} />
-                </div>
-                
-                <div className="flex items-center justify-between text-sm">
-                  <div className="flex items-center text-wmx-gray-600">
-                    <Calendar className="h-4 w-4 mr-1" />
-                    {formatDate(order.createdAt)}
-                  </div>
-                  <div className="font-bold text-glow-cyan">
-                    {formatCurrency(order.amount)}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </GlassCard>
-
-        {/* Quick Actions */}
-        <GlassCard hover>
-          <h2 className="text-xl font-heading font-bold text-wmx-dark mb-6">Quick Actions</h2>
           
-          <div className="space-y-4">
-            <GradientButton 
-              className="w-full justify-start"
-              onClick={() => router.push('/catalog')}
-            >
-              <ShoppingBag className="mr-3 h-5 w-5" />
-              Shop New Products
-            </GradientButton>
-            
-            <GradientButton 
-              variant="secondary"
-              className="w-full justify-start"
-              onClick={() => router.push('/dashboard/orders')}
-            >
-              <Clock className="mr-3 h-5 w-5" />
-              Check Order Status
-            </GradientButton>
-            
-            <GradientButton 
-              variant="sunset"
-              className="w-full justify-start"
-              onClick={() => router.push('/dashboard/balance')}
-            >
-              <Wallet className="mr-3 h-5 w-5" />
-              Top Up Balance
-            </GradientButton>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="mt-8">
-            <h3 className="text-lg font-heading font-semibold text-wmx-dark mb-4">Recent Activity</h3>
-            <div className="space-y-3">
-              <div className="flex items-start space-x-3 p-3 rounded-lg bg-white/60 border border-neon-green/20">
-                <div className="w-2 h-2 rounded-full bg-neon-green mt-2 animate-pulse"></div>
-                <div>
-                  <p className="text-sm text-wmx-dark font-medium">ML Diamond order completed</p>
-                  <p className="text-xs text-wmx-gray-600">2 hours ago</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3 p-3 rounded-lg bg-white/60 border border-neon-cyan/20">
-                <div className="w-2 h-2 rounded-full bg-neon-cyan mt-2 animate-pulse"></div>
-                <div>
-                  <p className="text-sm text-wmx-dark font-medium">Login from new device</p>
-                  <p className="text-xs text-wmx-gray-600">1 day ago</p>
-                </div>
-              </div>
-              <div className="flex items-start space-x-3 p-3 rounded-lg bg-white/60 border border-neon-purple/20">
-                <div className="w-2 h-2 rounded-full bg-neon-purple mt-2 animate-pulse"></div>
-                <div>
-                  <p className="text-sm text-wmx-dark font-medium">Profile updated successfully</p>
-                  <p className="text-xs text-wmx-gray-600">3 days ago</p>
-                </div>
-              </div>
+          {/* Status indicators */}
+          <div className="flex items-center space-x-4">
+            {/* Online/Offline status */}
+            <div className={cn(
+              "flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors duration-300",
+              isOnline 
+                ? "bg-neon-green/20 text-neon-green border border-neon-green/30" 
+                : "bg-red-500/20 text-red-400 border border-red-500/30"
+            )}>
+              <div className={cn(
+                "w-2 h-2 rounded-full mr-2 animate-pulse",
+                isOnline ? "bg-neon-green" : "bg-red-400"
+              )} />
+              {isOnline ? 'Live' : 'Offline'}
             </div>
+            
+            {/* Manual refresh button */}
+            <GradientButton 
+              size="sm" 
+              variant="secondary"
+              onClick={refetch}
+              disabled={loading}
+            >
+              <RefreshCw className={cn(
+                "h-4 w-4 transition-transform duration-200", 
+                loading && "animate-spin"
+              )} />
+            </GradientButton>
+            
+            {/* Last update time */}
+            {lastUpdate && (
+              <div className="text-xs text-wmx-gray-500">
+                Last updated: {new Date(lastUpdate).toLocaleTimeString()}
+              </div>
+            )}
           </div>
-        </GlassCard>
+        </div>
+      </div>
 
+      {/* Optimized Stats Grid */}
+      <StatsGrid 
+        stats={animatedStats}
+        animatingFields={animatingFields}
+        formatCurrency={memoizedFormatCurrency}
+      />
+
+      {/* Grid Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Optimized Orders List */}
+        <OrdersList
+          orders={data?.recentOrders || []}
+          formatCurrency={memoizedFormatCurrency}
+          formatDate={memoizedFormatDate}
+          convertOrderStatus={memoizedConvertOrderStatus}
+          onViewAll={handleViewAllOrders}
+        />
+
+        {/* Optimized Quick Actions */}
+        <QuickActions
+          onShop={handleShopNavigation}
+          onOrders={handleOrdersNavigation}
+          onBalance={handleBalanceNavigation}
+        />
       </div>
     </DashboardLayout>
   )
-}
+})
+
+DashboardPage.displayName = 'DashboardPage'
+
+export default DashboardPage
